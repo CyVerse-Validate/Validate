@@ -1,14 +1,14 @@
 from convexhull import convexHull
 from scipy import stats
-from scipy import special
+import pandas as pd
 
 def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.95]):
 
-    n_scores = float(len(scores))
-    sum_true = float(sum(true_class))
-    n0 = float(n_scores - sum_true)
-    pi0 = float(n0 / n_scores)
-    pi1 = float(sum_true / n_scores)
+    n = float(len(scores))
+    n1 = float(sum(true_class))
+    n0 = float(n - n1)
+    pi0 = float(n0 / n)
+    pi1 = float(n1 / n)
 
     sr = severity_ratio
     if sr is None:
@@ -16,7 +16,7 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
 
     sc = list(scores)
     sc.sort()
-    out_scores = get_score_distributions(true_class, scores, sum_true, n0)
+    out_scores = get_score_distributions(true_class, scores, n1, n0)
 
     auc = auc_solver(out_scores['s0'], out_scores['f1'], out_scores['s1'])
     switched = False
@@ -24,7 +24,7 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     if criterion:
         switched = True
         s = [1.0 - i for i in scores]
-        out_scores = get_score_distributions(true_class, scores, sum_true, n0)
+        out_scores = get_score_distributions(true_class, scores, n1, n0)
 
     f1 = out_scores['f1']
     f0 = out_scores['f0']
@@ -81,7 +81,36 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     cost[hc] = 1
 
     b00 = stats.beta(shape1, shape2)
-    test = special.btdtr(0, 1, 1)
+    b10 = stats.beta(shape1+1, shape2)
+    b01 = stats.beta(shape1, shape2+1)
+
+    b0[1] = stats.beta.cdf(cost[0], shape1=(shape1+1), shape2=shape2)*b10/b00
+    b1[0] = stats.beta.cdf(cost[0], shape1=(shape1+1), shape2=(shape2+1))*b01/b00
+    b0[hc] = stats.beta.cdf(cost[hc], shape1=(shape1+1), shape2=shape2)*b10/b00
+    b1[hc] = stats.beta.cdf(cost[hc], shape1=shape1, shape2=(shape2+1))*b01/b00
+
+    for i in range(1, hc):
+        cost[i] = pi1*(g1[i]-g1[i-1])/(pi0*(g0[i] - g0[i-1]) + pi1*(g1[i] - g1[i-1]))
+
+        b0[i] = stats.beta.cdf(cost[i], shape1=(shape1+1), shape2=shape2)*b10/b00
+        b1[i] = stats.beta.cdf(cost[i], shape1=shape1, shape2=(shape2+1))*b01/b00
+
+    LHshape1 = 0
+    for i in range(0, hc):
+        LHshape1 += pi0*(1-g0[i])*(b0[(i+1)]-b0[i]) + pi1*g1[i]*(b1[(i+1)]-b1[i])
+    B0 = stats.beta.cdf(pi1, shape1=(shape1+1), shape2=shape2)*b10/b00
+    B1 = stats.beta.cdf(1, shape1=shape1, shape2=(shape2+1))*b01/b00 - stats.beta.cdf(pi1, shape1=shape1, shape2=(shape2+1))*b01/b00
+
+    H = 1 - LHshape1/(pi0*B0 + pi1*B1)
+
+    # data1 = list(f0=f0, f1=f1, g0=g0, g1=g1, cost=cost, pi1=pi1, pi0=pi0, n0=n0, n1=n1,
+    #             n=n, hc=hc, s_class0=s_class0, s_class1=s_class1, sr=sr)
+    # data = [f0, f1, g0, g1, cost, pi1, pi0, n0, n1, n, hc, s_class0, s_class1, sr]
+
+    data = {f0:f0, f1:f1, g0:g0, g1:g1, cost:cost, pi1:pi1, pi0:pi0, n0:n0, n1:n1, n:n,
+            hc:hc, s_class0:s_class0, s_class1:s_class1, sr:sr}
+    metrics = pd.DataFrame(H=H, )
+
 ###################################################
 def convex_hull(a, b):
     fa = [1.0-ind for ind in a]
