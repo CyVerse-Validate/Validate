@@ -80,14 +80,15 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     cost[0] = 0
     cost[hc] = 1
 
+###### what is beta???????? ########
     b00 = stats.beta(shape1, shape2)
     b10 = stats.beta(shape1+1, shape2)
     b01 = stats.beta(shape1, shape2+1)
 
-    b0[1] = stats.beta.cdf(cost[0], shape1=(shape1+1), shape2=shape2)*b10/b00
-    b1[0] = stats.beta.cdf(cost[0], shape1=(shape1+1), shape2=(shape2+1))*b01/b00
-    b0[hc] = stats.beta.cdf(cost[hc], shape1=(shape1+1), shape2=shape2)*b10/b00
-    b1[hc] = stats.beta.cdf(cost[hc], shape1=shape1, shape2=(shape2+1))*b01/b00
+    b0[1] = stats.beta.cdf(cost[0], (shape1+1), shape2)*b10/b00
+    b1[0] = stats.beta.cdf(cost[0], (shape1+1), (shape2+1))*b01/b00
+    b0[hc] = stats.beta.cdf(cost[hc], (shape1+1), shape2)*b10/b00
+    b1[hc] = stats.beta.cdf(cost[hc], shape1, (shape2+1))*b01/b00
 
     for i in range(1, hc):
         cost[i] = pi1*(g1[i]-g1[i-1])/(pi0*(g0[i] - g0[i-1]) + pi1*(g1[i] - g1[i-1]))
@@ -109,7 +110,11 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
 
     data = {f0:f0, f1:f1, g0:g0, g1:g1, cost:cost, pi1:pi1, pi0:pi0, n0:n0, n1:n1, n:n,
             hc:hc, s_class0:s_class0, s_class1:s_class1, sr:sr}
-    metrics = pd.DataFrame(H=H, )
+    metrics = pd.DataFrame({'H':H, 'gini': gini, 'auc':auc, 'auch':auch, 'ks':ks, 'mer':mer, 'mwl':mwl})
+    metrics1 = pd.concat([metrics.reset_index(), spec_fixed, sens_fixed], axis=1)
+    metrics2 = pd.concat([metrics1.reset_index(), misclass_counts(scores, true_class, threshold)], axis = 1)
+
+    return [data, metrics2]
 
 ###################################################
 def convex_hull(a, b):
