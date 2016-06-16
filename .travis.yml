@@ -30,8 +30,8 @@ before_install:
 install:
     - wget https://cran.r-project.org/src/contrib/Rcpp_0.12.5.tar.gz
     - R CMD INSTALL Rcpp_0.12.5.tar.gz
-    - wget https://cran.r-project.org/src/contrib/plyr_1.8.3.tar.gz
-    - R CMD INSTALL plyr_1.8.3.tar.gz
+    - wget https://cran.r-project.org/src/contrib/plyr_1.8.4.tar.gz
+    - R CMD INSTALL plyr_1.8.4.tar.gz
     - wget https://cran.r-project.org/src/contrib/digest_0.6.9.tar.gz
     - R CMD INSTALL digest_0.6.9.tar.gz
     - wget https://cran.r-project.org/src/contrib/gtable_0.2.0.tar.gz
