@@ -1,10 +1,5 @@
 language: python
 
-cache:
-    directories:
-    - $HOME/miniconda
-    - $HOME/.cache/pip
-
 python:
     - "2.7"
 
