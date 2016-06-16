@@ -12,9 +12,9 @@ class WinnowTest(unittest.TestCase):
     Directs path to example data for testing.
     Initializes args to test values.
     """
-    folder = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/data/OutputPlink"
-    ote = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/data/Plinkkt.ote"
-    destination = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/results"
+    folder = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/data/OutputPlink"
+    ote = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/data/Plinkkt.ote"
+    destination = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/results"
     args = {'folder': folder, 'analysis': 'GWAS', 'truth': ote, 'snp': 'SNP', 'score': 'P', 'beta': 'BETA',
             'filename': destination, 'threshold': 0.05, 'separ': 'whitespace', 'kt_type': 'OTE',
             'kt_type_separ': 'whitespace', 'pvaladjust': None, 'savep': False, 'covar': None}

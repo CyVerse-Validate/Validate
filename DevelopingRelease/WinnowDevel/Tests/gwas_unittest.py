@@ -17,17 +17,17 @@ class GWASTest(unittest.TestCase):
     Directs path to example data for testing.
     Initializes args to test values.
     """
-    folder = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/data/OutputPlink"
-    ote = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/data/Plinkkt.ote"
-    destination = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/results"
+    folder = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/data/OutputPlink"
+    ote = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/data/Plinkkt.ote"
+    destination = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/results"
     args_without_covar = {'folder': folder, 'analysis': 'GWAS', 'truth': ote, 'snp': 'SNP', 'score': 'P',
                           'beta': 'BETA','filename': destination, 'threshold': 0.05, 'separ': 'whitespace',
                           'kt_type': 'OTE','kt_type_separ': 'whitespace', 'pvaladjust': None, 'savep': False,
                           'covar': None}
 
-    covar_folder = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/data/covar"
-    covar_ote = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/data/covarfakekt.ote"
-    covar_destination = os.getcwd()[:os.getcwd().index("Validate-Master")] + "Validate-Master/ExampleData/Winnow/covarresults"
+    covar_folder = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/data/covar"
+    covar_ote = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/data/covarfakekt.ote"
+    covar_destination = os.getcwd()[:os.getcwd().index("Validate")] + "Validate/ExampleData/Winnow/covarresults"
     args_with_covar = {'folder': covar_folder, 'analysis': 'GWAS', 'truth': covar_ote, 'snp': 'SNP', 'score': 'Pvalue',
                           'filename': covar_destination, 'threshold': 0.05, 'separ': 'comma',
                           'kt_type': 'OTE','kt_type_separ': 'whitespace', 'pvaladjust': None, 'savep': False,
