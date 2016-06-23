@@ -139,5 +139,5 @@ class AlphaSimMerge(MergeType):
             for genotype_line in genotype_file:
                 split_line = genotype_line.strip().split(' ', 1)
                 id = split_line[0]
-                geno = split_line[1].replace('1', 'A').replace('2', 'B')
+                geno = split_line[1].replace('1', 'A G').replace('2', 'A A').replace('0', 'G G')
                 yield id, geno
