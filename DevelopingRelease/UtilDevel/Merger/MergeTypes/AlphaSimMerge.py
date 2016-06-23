@@ -38,17 +38,19 @@ class AlphaSimMerge(MergeType):
         """
         map_path = self.output_prefix + '.map'
         ped_path = self.output_prefix + '.ped'
-        kt_path = self.output_prefix+'_pheno.txt'
+        kt_path = self.output_prefix + '_pheno.txt'
+        fam_pheno_path = self.output_prefix + '_fam_pheno.txt'
         with open(map_path, 'w') as map_file:
             map_gen = self.map_generator()
             for entry in map_gen:
                 map_file.write(entry)
-        with open(ped_path, 'w') as ped_file, open(kt_path, 'w') as kt_file:
+        with open(ped_path, 'w') as ped_file, open(kt_path, 'w') as kt_file, open(fam_pheno_path, 'w') as fam_pheno_file:
             ped_gen = self.ped_generator()
             for entry in ped_gen:
                 ped_file.write(entry)
                 split_entry = entry.split()
                 kt_file.write(split_entry[1] + '\t' + split_entry[5] + '\n')
+                fam_pheno_file.write(split_entry[0] + '\t' + split_entry[1] + '\t' + split_entry[5])
 
     def read_generator(self):
         """
