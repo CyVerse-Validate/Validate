@@ -100,10 +100,10 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
 
     H = 1 - LHshape1/(pi0*B0 + pi1*B1)
 
-    d = {'H':H, 'gini': gini, 'auch':auch, 'ks':ks, 'mer':mer, 'mwl':mwl}
-    metrics = pd.DataFrame({"analysis": d.keys(), "result": d.values()})
+    # d = {'H':H, 'gini': gini, 'auch':auch, 'ks':ks, 'mer':mer, 'mwl':mwl}
+    # metrics = pd.DataFrame({"analysis": d.keys(), "result": d.values()})
 
-    return metrics
+    return H
 
 def convex_hull(a, b):
     fa = [1.0-ind for ind in a]

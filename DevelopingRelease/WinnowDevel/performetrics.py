@@ -509,13 +509,8 @@ def hmeasure(snpTrueFalse, scoreColumn, severity_ratio=None, threshold=0.5, leve
             >>> threshold=0.5
             >>> level=.95
             >>> HMeasure.h_measure(snpTF, score, threshold, level)
-              analysis    result
-            0     gini  0.138889
-            1        H  0.258724
-            2     auch  0.694444
-            3       ks  0.333333
-            4      mer  0.333333
-            5      mwl  0.222222
+            0.258724
+
 
     :param snpTrueFalse: true/false data set
     :param threshold: significance threshold
