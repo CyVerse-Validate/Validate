@@ -1,5 +1,7 @@
 from convexhull import convexHull
 from scipy import stats
+import scipy
+from scipy import special
 import pandas as pd
 
 def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.95]):
@@ -9,7 +11,6 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     n0 = float(n - n1)
     pi0 = float(n0 / n)
     pi1 = float(n1 / n)
-
     sr = severity_ratio
     if sr is None:
         sr = pi1 / pi0
@@ -20,10 +21,10 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
 
     auc = auc_solver(out_scores['s0'], out_scores['f1'], out_scores['s1'])
     switched = False
-    criterion = auc < 0.2
+    criterion = auc < 0.5
     if criterion:
         switched = True
-        s = [1.0 - i for i in scores]
+        scores = [1.0 - i for i in scores]
         out_scores = get_score_distributions(true_class, scores, n1, n0)
 
     f1 = out_scores['f1']
@@ -40,7 +41,6 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     cost_parameter = sr / (1.0 + sr)
     mer = min([pi0 * (1.0 - j) + pi1 * k for j, k in zip(f0, f1)])
     mwl = 2 * min([cost_parameter * pi0 * (1.0 - j) + (1.0 - cost_parameter) * pi1 * k for j, k in zip(f0, f1)])
-
     sens_fixed = []
     spec_fixed = []
     look_up_auc(f0, [1.0 - j for j in f1])
@@ -64,13 +64,10 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
             s_class1 += [si]
     s_class0.sort()
     s_class1.sort()
-    cost = [si for si in range(1, (hc+2), 1)]
-    print cost
+    cost = [si for si in range(1, hc+2, 1)]
     b0 = [si for si in range(2, hc+2, 1)]
     b1 = [si for si in range(2, hc+2, 1)]
-    # print cost
-    # print b0
-    # print b1
+
     if sr > 0:
         shape1 = 2
         shape2 = 1 + (shape1-1) * (1/sr)
@@ -80,43 +77,34 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     cost[0] = 0
     cost[hc] = 1
 
-###### what is beta???????? ########
-    b00 = stats.beta(shape1, shape2)
-    b10 = stats.beta(shape1+1, shape2)
-    b01 = stats.beta(shape1, shape2+1)
+    b00 = special.beta(shape1, shape2)
+    b10 = special.beta(shape1+1, shape2)
+    b01 = special.beta(shape1, shape2+1)
 
-    b0[1] = stats.beta.cdf(cost[0], (shape1+1), shape2)*b10/b00
+    b0[0] = stats.beta.cdf(cost[0], (shape1+1), shape2)*b10/b00
     b1[0] = stats.beta.cdf(cost[0], (shape1+1), (shape2+1))*b01/b00
-    b0[hc] = stats.beta.cdf(cost[hc], (shape1+1), shape2)*b10/b00
-    b1[hc] = stats.beta.cdf(cost[hc], shape1, (shape2+1))*b01/b00
+    b0.append(stats.beta.cdf(cost[hc], (shape1+1), shape2)*b10/b00)
+    b1.append(stats.beta.cdf(cost[hc], shape1, (shape2+1))*b01/b00)
 
     for i in range(1, hc):
         cost[i] = pi1*(g1[i]-g1[i-1])/(pi0*(g0[i] - g0[i-1]) + pi1*(g1[i] - g1[i-1]))
 
-        b0[i] = stats.beta.cdf(cost[i], shape1=(shape1+1), shape2=shape2)*b10/b00
-        b1[i] = stats.beta.cdf(cost[i], shape1=shape1, shape2=(shape2+1))*b01/b00
+        b0[i] = stats.beta.cdf(cost[i], (shape1+1), shape2)*b10/b00
+        b1[i] = stats.beta.cdf(cost[i], shape1, (shape2+1))*b01/b00
 
     LHshape1 = 0
     for i in range(0, hc):
         LHshape1 += pi0*(1-g0[i])*(b0[(i+1)]-b0[i]) + pi1*g1[i]*(b1[(i+1)]-b1[i])
-    B0 = stats.beta.cdf(pi1, shape1=(shape1+1), shape2=shape2)*b10/b00
-    B1 = stats.beta.cdf(1, shape1=shape1, shape2=(shape2+1))*b01/b00 - stats.beta.cdf(pi1, shape1=shape1, shape2=(shape2+1))*b01/b00
+    B0 = stats.beta.cdf(pi1, (shape1+1), shape2)*b10/b00
+    B1 = stats.beta.cdf(1, shape1, (shape2+1))*b01/b00 - stats.beta.cdf(pi1, shape1, (shape2+1))*b01/b00
 
     H = 1 - LHshape1/(pi0*B0 + pi1*B1)
 
-    # data1 = list(f0=f0, f1=f1, g0=g0, g1=g1, cost=cost, pi1=pi1, pi0=pi0, n0=n0, n1=n1,
-    #             n=n, hc=hc, s_class0=s_class0, s_class1=s_class1, sr=sr)
-    # data = [f0, f1, g0, g1, cost, pi1, pi0, n0, n1, n, hc, s_class0, s_class1, sr]
+    d = {'H':H, 'gini': gini, 'auch':auch, 'ks':ks, 'mer':mer, 'mwl':mwl}
+    metrics = pd.DataFrame({"analysis": d.keys(), "result": d.values()})
 
-    data = {f0:f0, f1:f1, g0:g0, g1:g1, cost:cost, pi1:pi1, pi0:pi0, n0:n0, n1:n1, n:n,
-            hc:hc, s_class0:s_class0, s_class1:s_class1, sr:sr}
-    metrics = pd.DataFrame({'H':H, 'gini': gini, 'auc':auc, 'auch':auch, 'ks':ks, 'mer':mer, 'mwl':mwl})
-    metrics1 = pd.concat([metrics.reset_index(), spec_fixed, sens_fixed], axis=1)
-    metrics2 = pd.concat([metrics1.reset_index(), misclass_counts(scores, true_class, threshold)], axis = 1)
+    return metrics
 
-    return [data, metrics2]
-
-###################################################
 def convex_hull(a, b):
     fa = [1.0-ind for ind in a]
     fb = [1.0 - ind for ind in b]
@@ -165,6 +153,7 @@ def auc_solver(s0, f1, s1):
 def get_score_distributions(y, s, n1, n0):
     s1_combined = zip(s, y)
     s1_combined.sort()
+
     s1 = [0.0] + [i / n1 for j, i in s1_combined] + [0.0]
     y2 = [1.0 - i for i in y]
     s0_combined = zip(s, y2)
@@ -213,8 +202,3 @@ def misclass_counts(pred_class, true_class, threshold):
     return {'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn, 'er': er,
             'sens': sens, 'spec': spec, 'prec': prec, 'recall': recall,
             'tpr': tpr, 'fpr': fpr, 'f': f, 'youden': youden}
-
-
-true_class = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]
-score = [1.8, 0.9, 1.6, 0.5, 1, 0.1, 0.2, 2.6, -0.4, -0.1]
-print h_measure(true_class, score)
