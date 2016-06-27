@@ -499,7 +499,9 @@ def avgcovarweight(covar_column):
 
 def hmeasure(snpTrueFalse, scoreColumn, severity_ratio=None, threshold=0.5, level=[0.95]):
     """
-    Return hmeasure, Gini, AUCH, KS, MER, MWL
+    HMeasure is an invariant measure calculated by fixing the distribution in a classifier-independent manner.
+    This function returns hmeasure, Gini coefficient, area under the convex hull (AUCH), Kolmogorov-Smirnoff (KS) statistic,
+    minimum error rate (MER), minimum cost-weighted error rate (MWL).
 
         Example:
             >>> snpTF=[True,False,True,True,True,False,False,True,False,False,True,False]
@@ -514,5 +516,8 @@ def hmeasure(snpTrueFalse, scoreColumn, severity_ratio=None, threshold=0.5, leve
             3       ks  0.333333
             4      mer  0.333333
             5      mwl  0.222222
+    :param snpTrueFalse: true/false data set
+    :param threshold: significance threshold
+    :param scoreColumn: score data set
     """
     return HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level)
