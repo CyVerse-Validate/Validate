@@ -516,6 +516,7 @@ def hmeasure(snpTrueFalse, scoreColumn, severity_ratio=None, threshold=0.5, leve
             3       ks  0.333333
             4      mer  0.333333
             5      mwl  0.222222
+
     :param snpTrueFalse: true/false data set
     :param threshold: significance threshold
     :param scoreColumn: score data set
