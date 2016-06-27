@@ -4,7 +4,7 @@ Performance measures for testing applications in Winnow
 
 import numpy as np
 from scipy import stats
-
+import HMeasure
 
 def rmse(betaColumn, betaTrueFalse):
     """
@@ -444,10 +444,10 @@ def fdr(snpTrueFalse, threshold, scoreColumn):
                     >>> snpTF=[True,False,True,True,True,False,False,True,False,False,True,False]
                     >>> threshold = 0.05
                     >>> score = [0.003,0.65,0.004,0.006,0.078,0.003,0.0001,0.513,0.421,0.0081,0.043,0.98]
-                    >>> fdr(snpTrueFalse, threshold, scoreColumn)
-                    0.4285714285714286
+                    >>> fdr(snpTF, threshold, score)
+                    0.42857142857142855
 
-    :param snpTrueFalse: true/false data set
+:param snpTrueFalse: true/false data set
 :param threshold: significance threshold
 :param scoreColumn: score data set
 :return: the float representation of the precision value
@@ -496,3 +496,29 @@ def avgcovarweight(covar_column):
     :return: float representation of average covariate weight
     """
     return np.mean(np.array(covar_column))
+
+def hmeasure(snpTrueFalse, scoreColumn, severity_ratio=None, threshold=0.5, level=[0.95]):
+    """
+    HMeasure is an invariant measure calculated by fixing the distribution in a classifier-independent manner.
+    This function returns hmeasure, Gini coefficient, area under the convex hull (AUCH), Kolmogorov-Smirnoff (KS) statistic,
+    minimum error rate (MER), minimum cost-weighted error rate (MWL).
+
+        Example:
+            >>> snpTF=[True,False,True,True,True,False,False,True,False,False,True,False]
+            >>> score=[0.003,0.65,0.004,0.006,0.078,0.003,0.0001,0.513,0.421,0.0081,0.043,0.98]
+            >>> threshold=0.5
+            >>> level=.95
+            >>> HMeasure.h_measure(snpTF, score, threshold, level)
+              analysis    result
+            0     gini  0.138889
+            1        H  0.258724
+            2     auch  0.694444
+            3       ks  0.333333
+            4      mer  0.333333
+            5      mwl  0.222222
+
+    :param snpTrueFalse: true/false data set
+    :param threshold: significance threshold
+    :param scoreColumn: score data set
+    """
+    return HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level)
