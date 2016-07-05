@@ -29,7 +29,7 @@ def gwasWithBeta(betaColumn, betaTrueFalse, snpTrueFalse, scoreColumn, threshold
             sens(snpTrueFalse, threshold, scoreColumn), spec(snpTrueFalse, threshold, scoreColumn),
             precision(snpTrueFalse, threshold, scoreColumn), fdr(snpTrueFalse, threshold, scoreColumn),
             youden(snpTrueFalse, threshold, scoreColumn),
-            HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=.95)]
+            HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=[.95])]
 
 
 def gwasBetaCovar(betaColumn, betaTrueFalse, snpTrueFalse, scoreColumn, threshold, covar):
@@ -59,7 +59,7 @@ def gwasBetaCovar(betaColumn, betaTrueFalse, snpTrueFalse, scoreColumn, threshol
             precision(snpTrueFalse, threshold, scoreColumn), fdr(snpTrueFalse, threshold, scoreColumn),
             youden(snpTrueFalse, threshold, scoreColumn),
             avgcovarweight(covar),
-            HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=.95)]
+            HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=[.95])]
 
 
 def gwasWithoutBeta(snpTrueFalse, scoreColumn, threshold):
@@ -89,7 +89,7 @@ def gwasWithoutBeta(snpTrueFalse, scoreColumn, threshold):
                precision(snpTrueFalse, threshold, scoreColumn),
                fdr(snpTrueFalse, threshold, scoreColumn),
                youden(snpTrueFalse, threshold, scoreColumn),
-               HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=.95)]
+               HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=[.95])]
 
 
 def gwasNoBetaCovar(snpTrueFalse, scoreColumn, threshold, covar):
@@ -121,4 +121,4 @@ def gwasNoBetaCovar(snpTrueFalse, scoreColumn, threshold, covar):
                fdr(snpTrueFalse, threshold, scoreColumn),
                youden(snpTrueFalse, threshold, scoreColumn),
                avgcovarweight(covar),
-               HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=.95)]
+               HMeasure.h_measure(snpTrueFalse, scoreColumn, threshold, level=[.95])]
