@@ -1,11 +1,8 @@
 from convexhull import convexHull
-from scipy import stats
-import scipy
-from scipy import special
-import pandas as pd
+from scipy import stats, special
+
 
 def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.95]):
-
     n = float(len(scores))
     n1 = float(sum(true_class))
     n0 = float(n - n1)
@@ -14,11 +11,9 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     sr = severity_ratio
     if sr is None:
         sr = pi1 / pi0
-
     sc = list(scores)
     sc.sort()
     out_scores = get_score_distributions(true_class, scores, n1, n0)
-
     auc = auc_solver(out_scores['s0'], out_scores['f1'], out_scores['s1'])
     switched = False
     criterion = auc < 0.5
