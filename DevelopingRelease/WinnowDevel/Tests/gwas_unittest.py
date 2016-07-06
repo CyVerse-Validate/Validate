@@ -42,9 +42,10 @@ class GWASTest(unittest.TestCase):
         self.win = Winnow.Winnow(self.args_without_covar)
         s, b = self.win.load_data("/PlinkStd1.qassoc")
         self.win.load_ote()
-        desired = [0.058961209687231467, 0.18211782935394127, -0.038381861728111748, 0.43427678571428574, 0, 384, 2816,
-                   35, 0.0, 0.12, 0.010819165378670788, 0.1295208655332303, 0.8704791344667697, 0.0, 0.88, 0.0, 1.0, -0.12]
-        result = gwas.gwasWithBeta(b, self.win.beta_true_false, self.win.snp_true_false,
+        desired = ['test_filename', 0.058961209687231467, 0.18211782935394127, -0.038381861728111748,
+                   0.43427678571428574, 0, 384, 2816, 35, 0.0, 0.12, 0.010819165378670788, 0.1295208655332303,
+                   0.8704791344667697, 0.0, 0.88, 0.0, 1.0, -0.12, -7.7753167457938126]
+        result = gwas.gwasWithBeta('test_filename', b, self.win.beta_true_false, self.win.snp_true_false,
                                    s, self.args_without_covar['threshold'])[1]
         for x in range(0, len(result)):
             try:
@@ -52,7 +53,6 @@ class GWASTest(unittest.TestCase):
             except AssertionError:
                 print "Test failed"
                 print "Desired value " + str(desired[x]) + " does not match up with result value " + str(result[x])
-
 
     def test_gwas_with_beta_covariate(self):
         """
@@ -63,11 +63,11 @@ class GWASTest(unittest.TestCase):
         self.win = Winnow.Winnow(self.args_with_covar)
         s, b, c = self.win.load_data('/Testwithcovar.csv')
         self.win.load_ote()
-        desired = [0.0020088036966300713, 0.034581652710000001, 0.086763105180589231, 0.85191672505254723, 6, 475, 9516,
-                   3, 0.6666666666666666, 0.04754278850965869, 0.0009, 0.0478, 0.9522, 0.6666666666666666, 0.9524572114903413,
-                   0.012474012474012475, 0.9875259875259875, 0.6191238781570081, 0.083426920159999987]
-
-        result = gwas.gwasBetaCovar(b, self.win.beta_true_false, self.win.snp_true_false, s,
+        desired = ['test_filename', 0.0020088036966300713, 0.034581652710000001, 0.086763105180589231,
+                   0.85191672505254723, 6, 475, 9516, 3, 0.6666666666666666, 0.04754278850965869, 0.0009, 0.0478,
+                   0.9522, 0.6666666666666666, 0.9524572114903413, 0.012474012474012475, 0.9875259875259875,
+                   0.6191238781570081, 0.083426920159999987, 0.49487168117447544]
+        result = gwas.gwasBetaCovar('test_filename', b, self.win.beta_true_false, self.win.snp_true_false, s,
                                     self.args_with_covar['threshold'], c)[1]
         for x in range(0, len(result)):
             try:
@@ -85,9 +85,11 @@ class GWASTest(unittest.TestCase):
         self.win = Winnow.Winnow(self.args_without_covar)
         s = self.win.load_data("/PlinkStd1.qassoc")
         self.win.load_ote()
-        desired = [-0.038381861728111748, 0.43427678571428574, 0, 384, 2816, 35, 0.0, 0.12, 0.010819165378670788,
-                   0.1295208655332303, 0.8704791344667697, 0.0, 0.88, 0.0, 1.0, -0.12]
-        result = gwas.gwasWithoutBeta(self.win.snp_true_false, s, self.args_without_covar['threshold'])[1]
+        desired = ['test_filename', -0.038381861728111748, 0.43427678571428574, 0, 384, 2816, 35, 0.0, 0.12,
+                   0.010819165378670788, 0.1295208655332303, 0.8704791344667697, 0.0, 0.88, 0.0, 1.0, -0.12,
+                   -7.7753167457938126]
+        result = gwas.gwasWithoutBeta('test_filename', self.win.snp_true_false, s,
+                                      self.args_without_covar['threshold'])[1]
         for x in range(0, len(result)):
             try:
                 self.assertAlmostEquals(desired[x], result[x])
@@ -104,10 +106,12 @@ class GWASTest(unittest.TestCase):
         self.win = Winnow.Winnow(self.args_with_covar)
         s, c = self.win.load_data("/Testwithcovar.csv")
         self.win.load_ote()
-        desired = [0.086763105180589231, 0.85191672505254723, 6, 475, 9516, 3, 0.6666666666666666, 0.04754278850965869,
-                   0.0009, 0.0478, 0.9522, 0.6666666666666666, 0.9524572114903413, 0.012474012474012475, 0.9875259875259875,
-                   0.6191238781570081, 0.083426920159999987]
-        result = gwas.gwasNoBetaCovar(self.win.snp_true_false, s, self.args_with_covar['threshold'], c)[1]
+        desired = ['test_filename', 0.086763105180589231, 0.85191672505254723, 6, 475, 9516, 3, 0.6666666666666666,
+                   0.04754278850965869, 0.0009, 0.0478, 0.9522, 0.6666666666666666, 0.9524572114903413,
+                   0.012474012474012475, 0.9875259875259875, 0.6191238781570081, 0.083426920159999987,
+                   0.49487168117447544]
+        result = gwas.gwasNoBetaCovar('test_filename', self.win.snp_true_false, s,
+                                      self.args_with_covar['threshold'], c)[1]
         for x in range(0, len(result)):
             try:
                 self.assertAlmostEquals(desired[x], result[x])

@@ -12,6 +12,7 @@ from checkhidden import checkList
 from gwas import gwasWithBeta, gwasWithoutBeta, gwasBetaCovar, gwasNoBetaCovar
 from statsmodels.sandbox.stats.multicomp import multipletests
 
+
 class Winnow:
     def __init__(self, args):
         """
@@ -23,7 +24,7 @@ class Winnow:
         self.args_dict = args
         if os.path.isfile(os.path.abspath(self.args_dict['folder'])):
             os.mkdir(os.getcwd()+'/Winnow_input')
-            os.rename(self.args_dict['folder'],os.getcwd()+'/Winnow_input/'+self.args_dict['folder'])
+            os.rename(self.args_dict['folder'], os.getcwd()+'/Winnow_input/'+self.args_dict['folder'])
             self.args_dict['folder'] = 'Winnow_input'
         self.snp_true_false = list()
         self.beta_true_false = list()
@@ -128,7 +129,7 @@ class Winnow:
                     beta_column = None
                     covar_column = None
             if self.args_dict['analysis'] == 'GWAS':
-                yield self.do_gwas(score_column, beta_column, covar_column)
+                yield self.do_gwas(each, score_column, beta_column, covar_column)
             else:
                 # Add other analysis methods here
                 print 'Currently, only GWAS is supported.'
@@ -149,11 +150,12 @@ class Winnow:
                 first_for_header = False
         gen.close()
 
-    def do_gwas(self, score_column, beta_column, covar_column):
+    def do_gwas(self, file_name, score_column, beta_column, covar_column):
         """
         Returns the results of the GWAS analysis, with or without beta, using the instance variables snp_true_false and
         beta_true_false and the lists, from the parameters, the lists of scores and, if applicable, the list of betas.
 
+        :param file_name: the current input file, used for a column in the output file
         :param score_column: the list of scores
         :param beta_column: the list of betas if performing analysis with beta
         :return: the values of the GWAS analysis with or without beta depending on runtime parameters
@@ -161,14 +163,14 @@ class Winnow:
         threshold = self.args_dict['threshold']
         if self.args_dict['beta'] is None:
             if self.args_dict['covar'] is None:
-                return gwasWithoutBeta(self.snp_true_false, score_column, threshold)
+                return gwasWithoutBeta(file_name, self.snp_true_false, score_column, threshold)
             else:
-                return gwasNoBetaCovar(self.snp_true_false, score_column, threshold, covar_column)
+                return gwasNoBetaCovar(file_name, self.snp_true_false, score_column, threshold, covar_column)
         else:
             if self.args_dict['covar'] is not None:
-                return gwasBetaCovar(beta_column, self.beta_true_false, self.snp_true_false, score_column, threshold, covar_column)
+                return gwasBetaCovar(file_name, beta_column, self.beta_true_false, self.snp_true_false, score_column, threshold, covar_column)
             else:
-                return gwasWithBeta(beta_column, self.beta_true_false, self.snp_true_false, score_column, threshold)
+                return gwasWithBeta(file_name, beta_column, self.beta_true_false, self.snp_true_false, score_column, threshold)
 
     def adjust_score(self, score):
         """
@@ -186,7 +188,7 @@ class Winnow:
         """
         Saves the file name, p-value, and adjusted p-value if set
 
-        :param data: the data file
+        :param snp: the data file
         :param score: the list of p-values
         :param adjusted: the list of adjusted p-values
         :return: saves a text file in the format file, p-value, adjusted p-value if adjustments has been selected
@@ -209,7 +211,6 @@ class Winnow:
                     else:
                         f.write('SNP ID \tP-Value')
                 self.save_snp_score(snp, score, adjusted)
-
 
     def save_settings(self):
         """

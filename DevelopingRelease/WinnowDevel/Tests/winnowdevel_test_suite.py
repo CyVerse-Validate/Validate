@@ -7,6 +7,7 @@ import winnow_unittest
 import performetrics_unittest
 import adjustments_unittest
 import gwas_unittest
+import hmeasure_unittest
 
 
 def main():
@@ -21,6 +22,7 @@ def main():
     test_suite.addTests(performetrics_unittest.get_test_suite())
     test_suite.addTests(adjustments_unittest.get_test_suite())
     test_suite.addTests(gwas_unittest.get_test_suite())
+    test_suite.addTests(hmeasure_unittest.get_test_suite())
 
     # Runs tests
     unittest.TextTestRunner(verbosity=2).run(test_suite)
