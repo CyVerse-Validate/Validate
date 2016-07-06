@@ -100,6 +100,7 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
 
     return H
 
+
 def convex_hull(a, b):
     fa = [1.0-ind for ind in a]
     fb = [1.0 - ind for ind in b]
@@ -107,7 +108,6 @@ def convex_hull(a, b):
     points = [(ind, jnd) for ind, jnd in zip(fa, fc)]
     ch = convexHull(points)
     return [it[0] for it in ch], [it[1] for it in ch]
-
 
 
 def look_up_auc(x_curve, y_curve, x=0):
