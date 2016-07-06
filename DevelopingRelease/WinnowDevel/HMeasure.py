@@ -15,27 +15,12 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     sc.sort()
     out_scores = get_score_distributions(true_class, scores, n1, n0)
     auc = auc_solver(out_scores['s0'], out_scores['f1'], out_scores['s1'])
-    switched = False
     criterion = auc < 0.5
     if criterion:
-        switched = True
         scores = [1.0 - i for i in scores]
         out_scores = get_score_distributions(true_class, scores, n1, n0)
-
     f1 = out_scores['f1']
     f0 = out_scores['f0']
-    s0 = out_scores['s0']
-    s1 = out_scores['s1']
-    s_len = out_scores['s_len']
-
-    # Misclassification stats
-    misclass_dict = misclass_counts(scores, true_class, threshold)
-    auc = auc_solver(out_scores['s0'], out_scores['f1'], out_scores['s1'])
-    gini = 2 * auc - 1.0
-    ks = max([abs(i - j) for i, j in zip(f0, f1)])
-    cost_parameter = sr / (1.0 + sr)
-    mer = min([pi0 * (1.0 - j) + pi1 * k for j, k in zip(f0, f1)])
-    mwl = 2 * min([cost_parameter * pi0 * (1.0 - j) + (1.0 - cost_parameter) * pi1 * k for j, k in zip(f0, f1)])
     sens_fixed = []
     spec_fixed = []
     look_up_auc(f0, [1.0 - j for j in f1])
@@ -47,9 +32,6 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     g0 = chull_points[0]
     g1 = chull_points[1]
     hc = len(g0)
-    sg0 = [0.0] + diff(g0)
-    sg1 = [0.0] + diff(g1)
-    auch = sum([si*(gi-0.5*sgi) for si, gi, sgi in zip(sg0, g1, sg1)])
     s_class0 = []
     s_class1 = []
     for si, yi in zip(scores, true_class):
@@ -62,7 +44,6 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     cost = [si for si in range(1, hc+2, 1)]
     b0 = [si for si in range(2, hc+2, 1)]
     b1 = [si for si in range(2, hc+2, 1)]
-
     if sr > 0:
         shape1 = 2
         shape2 = 1 + (shape1-1) * (1/sr)
@@ -71,16 +52,13 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
         shape2 = pi0 + 1
     cost[0] = 0
     cost[hc] = 1
-
     b00 = special.beta(shape1, shape2)
     b10 = special.beta(shape1+1, shape2)
     b01 = special.beta(shape1, shape2+1)
-
     b0[0] = stats.beta.cdf(cost[0], (shape1+1), shape2)*b10/b00
     b1[0] = stats.beta.cdf(cost[0], (shape1+1), (shape2+1))*b01/b00
     b0.append(stats.beta.cdf(cost[hc], (shape1+1), shape2)*b10/b00)
     b1.append(stats.beta.cdf(cost[hc], shape1, (shape2+1))*b01/b00)
-
     for i in range(1, hc):
         cost[i] = pi1*(g1[i]-g1[i-1])/(pi0*(g0[i] - g0[i-1]) + pi1*(g1[i] - g1[i-1]))
 
@@ -94,10 +72,6 @@ def h_measure(true_class, scores, severity_ratio=None, threshold=0.5, level=[0.9
     B1 = stats.beta.cdf(1, shape1, (shape2+1))*b01/b00 - stats.beta.cdf(pi1, shape1, (shape2+1))*b01/b00
 
     H = 1 - LHshape1/(pi0*B0 + pi1*B1)
-
-    # d = {'H':H, 'gini': gini, 'auch':auch, 'ks':ks, 'mer':mer, 'mwl':mwl}
-    # metrics = pd.DataFrame({"analysis": d.keys(), "result": d.values()})
-
     return H
 
 
