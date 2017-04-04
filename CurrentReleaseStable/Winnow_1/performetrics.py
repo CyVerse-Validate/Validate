@@ -258,6 +258,8 @@ def tpr(snpTrueFalse, threshold, scoreColumn):
     for each in snpTrueFalse:
         if each is True:
             count += 1.0
+
+    # print "\n\nTrue Positives: {}\nCount: {}\n\n".format(truePositives, count)
     return float(truePositives / count)
 
 

@@ -49,8 +49,10 @@ def trueFalse(currentSnp, ktSnps):
     :return: True is the current SNP is in the known-truth SNPs
     """
     if currentSnp in ktSnps:
+        # print "Current: {}\t\tTRUE".format(currentSnp)
         return True
     else:
+        # print "Current: {}\t\tFALSE".format(currentSnp)
         return False
 
 

@@ -52,8 +52,13 @@ class Winnow:
         snp_column = data_to_list(acquired_data, 1, acquired_data.header.index(self.args_dict['snp']))
         kt_snps = data_to_list(kt_file, 1, 0)
         kt_betas = data_to_list(kt_file, 1, 1)
+
+        # print "\n\nChecking SNPs...\n\n"
         for each in snp_column:
             self.snp_true_false.append(trueFalse(each, kt_snps))
+        # print "\n\nDone. Loading OTE Betas..."
+
+
         self.load_ote_betas(snp_column, kt_snps, kt_betas)
 
     def load_ote_betas(self, snp_col, kt_snp, kt_beta):

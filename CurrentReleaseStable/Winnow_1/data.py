@@ -41,6 +41,6 @@ class Data:
             data[count] = list()
             for each in row:
                 if each is not "":
-                    data[count].append(each)
+                    data[count].append(each.strip())
             count += 1
         return data, count
