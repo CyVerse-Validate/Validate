@@ -1,0 +1,13 @@
+{
+  "name": "Job name string.",
+  "inputs": {
+    "inputPED": "",
+    "inputMAP": ""
+  },
+  "parameter": {
+    "verbose": true,
+    "fastlmm": false,
+    "bayesR": false,
+    "plink": false
+  }
+}
