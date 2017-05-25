@@ -36,8 +36,6 @@ class Pipeline:
         :return:
         """
         parser = argparse.ArgumentParser()
-        # parser.add_argument("-g", "--gwas", help="GWAS JSON files for Agave", required=True)
-        # parser.add_argument("-t", "--OTE", help="OTE file location on the Discovery Environment", required=True)
         parser.add_argument("-i", "--InFormat", type=chr(1),
                             help="Input format:\n"
                                  "\tp for PED/MAP\n"
@@ -57,15 +55,18 @@ class Pipeline:
                             help="\"True\" if QxPak is to be run.")
         parser.add_argument("-g", "--gemma", type=bool,
                             help="\"True\" if Gemma is to be run.")
+
         args = parser.parse_args()
-        # self.gwas_json = args.gwas
-        # self.ote_location = args.ote
         self.input_format = args.InFormat
         self.data_folder = args.Folder
         self.desired_gwas = tuple([args.lmm, args.ridge, args.bayes, args.plink,
                                    args.qxpak, args.gemma])
 
     def parse_inputs(self):
+        """Grabs the known-truth and all input files from the given directory.
+
+        :return:
+        """
         file_list = Agave.FilesApi.listOnDefaultSystem(self.data_folder).result
 
         if self.input_format == 'p':
@@ -76,6 +77,7 @@ class Pipeline:
                     self.inputs['inputPED'] = file.path
                 elif ".map" in file.name:
                     self.inputs['inputMAP'] = file.path
+
         elif self.input_format == 'b':
             for file in file_list:
                 if ".ote" in file.name:
@@ -86,6 +88,7 @@ class Pipeline:
                     self.inputs['inputBIM'] = file.path
                 elif 'fam' in file.name:
                     self.inputs['inputFAM'] = file.path
+
         else:
             for file in file_list:
                 if ".ote" in file.name:
@@ -95,37 +98,11 @@ class Pipeline:
                 elif ".tmap" in file.name:
                     self.inputs['inputTMAP'] = file.path
 
-        # for file in file_list:
-        #     if ".ote" in file.name:
-        #         self.known_truth = file.path
-        #     elif self.input_format == 'p':
-        #         self.inputs['inputPED'] =
-        #         self.inputs['inputMAP'] =
-        #     elif self.input_format == 'b':
-        #         self.inputs['inputBED'] =
-        #         self.inputs['inputBIM'] =
-        #         self.inputs['inputFAM'] =
-        #     elif self.input_format == 't':
-        #         self.inputs['inputTPED'] =
-        #         self.inputs['inputTFAM'] =
-            # elif any([x in file.name for x in [".ped", ".map"]]):
-            #     self.dataset_name, tmp = file.split(".")
-            #     self.inputs.append(file)
-            # elif any([x in file.name for x in [".bim", ".bam", ".fam"]]):
-            #     self.dataset_name, tmp = file.split(".")
-            #     self.inputs.append(file)
-            # elif any([x in file.name for x in [".tped", ".tfam"]]):
-            #     self.dataset_name, tmp = file.split(".")
-            #     self.inputs.append(file)
-
-        # for file in file_list:
-        #     if file.type.lower() == "file":
-        #         name, ext = file.name.split(".")
-        #         if ext.lower() == ".ote":
-        #             self.known_truth = file
-        #         elif ext
-
     def build_jsons(self):
+        """Builds JSONs from the parsed input information.
+
+        :return:
+        """
         self.gwas_jsons = []
         for gwas in self.desired_gwas:
             if gwas:
@@ -146,9 +123,10 @@ class Pipeline:
         Jobs are removed once they are finished.
         """
         #TODO look at notifications instead?
+        #TODO keep data on the datastore - no downloading
         sleep_time = 60
-        os.makedirs("Outputs")
-        os.chdir("Outputs")
+        # os.makedirs("Outputs")
+        # os.chdir("Outputs")
 
         # Iterating through all JobIDs and polling until there are no more jobs
         while not self.running_jobs.keys():
@@ -167,7 +145,7 @@ class Pipeline:
             time.sleep(sleep_time)
             sleep_time *= 2 if sleep_time <= 3600 else sleep_time
 
-        os.chdir(self.submission_dir)
+        # os.chdir(self.submission_dir)
 
     def download_outputs(self, job_id):
         #TODO avoid - work via Agave & Discovery Environment instead
