@@ -10,7 +10,7 @@ __maintainer__ = "Michael Suggs"
 __email__ = "mjs3607@uncw.edu"
 __status__ = "Development"
 
-# TODO: Move pipeline to a new directory to contain all outputs
+
 class Pipeline:
     """Handles job submission for the Validate Pipeline."""
     # TODO Change pipeline around to take user folder location
@@ -21,10 +21,12 @@ class Pipeline:
         self.known_truth = ""
         self.dataset_name = ""
         self.desired_gwas = ()      # Tuple of booleans
-        self.running_jobs = {}      # Running jobs dictionary with the format { 'id' : 'outputPath' }
+        self.running_jobs = {}      # Running jobs dictionary with the format { 'id' : 'Job' }
         self.finished_jobs = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
 
         self.checkArgs()
+        self.parse_inputs()
+        self.build_jsons()
 
         # TODO build gwas files from the given folder.
         self.gwas_submission()
@@ -42,7 +44,9 @@ class Pipeline:
                                  "\tb for BIM/BED/FAM\n"
                                  "\tt for TPED/TFAM")
         parser.add_argument("-f", "--Folder", type=str,
-                            help="Folder to be pipelined.")
+                            help="Folder to be pipelined. This folder should"
+                                 "contain all input data as well as the known-truth"
+                                 "file for the given data set.")
         parser.add_argument("-l", "--fastlmm", type=bool,
                             help="\"True\" if FaST-LMM is to be run.")
         parser.add_argument("-r", "--ridge", type=bool,
@@ -67,36 +71,36 @@ class Pipeline:
 
         :return:
         """
-        file_list = Agave.FilesApi.listOnDefaultSystem(self.data_folder).result
+        file_list = Agave.FilesApi.listOnDefaultSystem(self.data_folder).swaggerTypes['result']
 
         if self.input_format == 'p':
             for file in file_list:
-                if ".ote" in file.name:
-                    self.known_truth = file.path
-                elif ".ped" in file.name:
-                    self.inputs['inputPED'] = file.path
-                elif ".map" in file.name:
-                    self.inputs['inputMAP'] = file.path
+                if ".ote" in file.swaggerTypes['name']:
+                    self.known_truth = file.swaggerTypes['path']
+                elif ".ped" in file.swaggerTypes['name']:
+                    self.inputs['inputPED'] = file.swaggerTypes['path']
+                elif ".map" in file.swaggerTypes['name']:
+                    self.inputs['inputMAP'] = file.swaggerTypes['path']
 
         elif self.input_format == 'b':
             for file in file_list:
-                if ".ote" in file.name:
-                    self.known_truth = file.path
-                elif '.bed' in file.name:
-                    self.inputs['inputBED'] = file.path
-                elif '.bim' in file.name:
-                    self.inputs['inputBIM'] = file.path
-                elif 'fam' in file.name:
-                    self.inputs['inputFAM'] = file.path
+                if ".ote" in file.swaggerTypes['name']:
+                    self.known_truth = file.swaggerTypes['path']
+                elif '.bed' in file.swaggerTypes['name']:
+                    self.inputs['inputBED'] = file.swaggerTypes['path']
+                elif '.bim' in file.swaggerTypes['name']:
+                    self.inputs['inputBIM'] = file.swaggerTypes['path']
+                elif 'fam' in file.swaggerTypes['name']:
+                    self.inputs['inputFAM'] = file.swaggerTypes['path']
 
         else:
             for file in file_list:
-                if ".ote" in file.name:
-                    self.known_truth = file.path
-                elif ".tped" in file.name:
-                    self.inputs['inputTPED'] = file.path
-                elif ".tmap" in file.name:
-                    self.inputs['inputTMAP'] = file.path
+                if ".ote" in file.swaggerTypes['name']:
+                    self.known_truth = file.swaggerTypes['path']
+                elif ".tped" in file.swaggerTypes['name']:
+                    self.inputs['inputTPED'] = file.swaggerTypes['path']
+                elif ".tmap" in file.swaggerTypes['name']:
+                    self.inputs['inputTMAP'] = file.swaggerTypes['path']
 
     def build_jsons(self):
         """Builds JSONs from the parsed input information.
@@ -106,17 +110,20 @@ class Pipeline:
         self.gwas_jsons = []
         for gwas in self.desired_gwas:
             if gwas:
-                self.gwas_jsons += JsonBuilder.make_gwas_json(self.desired_gwas.index(gwas),
-                                                              self.data_folder)
+                self.gwas_jsons += JsonBuilder.make_gwas_json(
+                    self.desired_gwas.index(gwas), self.dataset_name, self.inputs)
 
     def gwas_submission(self):
         """Submits all provided JSON files via the Agave REST APIs.
+        All currently running jobs are stored in the 'running_jobs' dictionary,
+        which has the format of { 'job[id]' : 'Job' } with 'Job' being the
+        Job.py response from the server given upon job submission.
 
         :return:
         """
         for json in self.gwas_json:
-            job = Agave.JobsApi.submit(json).result
-            self.running_jobs[job.id] = job.outputPath
+            job = Agave.JobsApi.submit(json).swaggerTypes['result']
+            self.running_jobs[job.swaggerTypes['id']] = job
 
     def poll_jobs(self):
         """Polls all running jobs for status until completion.
@@ -180,7 +187,7 @@ class Pipeline:
         #
         # QxPak single output file - qxpak.out.
         #
-        # Gemma
+        # Gemma ???
         pass
 
     def demonstrate_submission(self):

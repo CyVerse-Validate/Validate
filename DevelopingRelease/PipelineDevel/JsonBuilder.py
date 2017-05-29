@@ -17,13 +17,15 @@ def fastlmm_json(data_name, input_dict):
         "requestedTime": "02:00:00",
         "archive": True,
             "inputs": input_dict,
-            "parameters": {
-                "output": "full_results"
-            }
+        "parameters": {
+            "output": "full_results"
         }
+    }
 
-    with open('FaST-LMM_{}.json'.format(data_name), 'w') as f:
+    file_name = 'FaST-LMM_{}.json'.format(data_name)
+    with open(file_name, 'w') as f:
         json.dumps(json_text, f)
+    return file_name
 
 
 def ridge_json(data_name, input_dict):
@@ -45,8 +47,10 @@ def ridge_json(data_name, input_dict):
         }
     }
 
-    with open('RidgePredict_{}.json'.format(data_name), 'w') as f:
+    file_name = 'RidgePredict_{}.json'.format(data_name)
+    with open(file_name, 'w') as f:
         json.dumps(json_text, f)
+    return file_name
 
 
 def bayesr_json(data_name, input_dict):
@@ -71,8 +75,10 @@ def bayesr_json(data_name, input_dict):
         }
     }
 
-    with open('BayesR_{}.json'.format(data_name), 'w') as f:
+    file_name = 'BayesR_{}.json'.format(data_name)
+    with open(file_name, 'w') as f:
         json.dumps(json_text, f)
+    return file_name
 
 
 def plink_json(data_name):
@@ -98,41 +104,52 @@ def plink_json(data_name):
         }
     }
 
-    with open('PLINK_{}.json'.format(data_name), 'w') as f:
+    file_name = 'PLINK_{}.json'.format(data_name)
+    with open(file_name, 'w') as f:
         json.dumps(json_text, f)
+    return file_name
 
 
 #TODO make current pipeline implementation work with this input format
-# def qxpak_json(data_name, input_dict):
-#     json_text = {
-#         "name": "QxPak_{}".format(data_name),
-#         "appId": "qxpak-stampede-5.05u2",
-#         "archive": True,
-#         "inputs": {
-#             "parameter_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/parameterFile.par",
-#             "data_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/dataFile.dat",
-#             "pedigree_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/pedigreeFile.ped",
-#             "marker_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/markerFile.mkr"
-#         },
-#         "parameter": {
-#             "output": "test"
-#         }
-#
-#     }
+def qxpak_json(data_name, input_dict):
+    json_text = {
+        "name": "QxPak_{}".format(data_name),
+        "appId": "qxpak-stampede-5.05u2",
+        "archive": True,
+        "inputs": {
+            "parameter_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/parameterFile.par",
+            "data_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/dataFile.dat",
+            "pedigree_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/pedigreeFile.ped",
+            "marker_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/markerFile.mkr"
+        },
+        "parameter": {
+            "output": "test"
+        }
+
+    }
 
 #TODO find Gemma JSON?
-# def gemma_json(data_name, input_dict):
-#     pass
+def gemma_json(data_name, input_dict):
+    pass
 
 
-def make_gwas_json(selected_gwas, datafolder):
+def make_gwas_json(selected_gwas, dataset_name, inputs):
     """Selected GWAS is a list of binary values with each element representing
         whether a given gwas should be run or not.
 
     :param selected_gwas: List of GWAS applications to run the data through
     :return:
     """
-    pass
+    switcher = {
+        0: fastlmm_json(dataset_name, inputs),
+        1: ridge_json(dataset_name, inputs),
+        2: bayesr_json(dataset_name, inputs),
+        3: plink_json(dataset_name),
+        4: qxpak_json(dataset_name, inputs),
+        5: gemma_json(dataset_name, inputs)
+    }
+
+    return switcher.get(selected_gwas)
 
 
 def make_winnow_json(job_name, gwas_folder, ote_file):
@@ -165,5 +182,7 @@ def make_winnow_json(job_name, gwas_folder, ote_file):
         }
     }
 
-    with open('winnow-{}.json'.format(job_name), 'w') as f:
+    file_name = 'winnow-{}.json'.format(job_name)
+    with open(file_name, 'w') as f:
         json_text = json.dumps(json_text, f)
+    return file_name
