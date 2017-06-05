@@ -152,24 +152,24 @@ def make_gwas_json(selected_gwas, dataset_name, inputs):
     return switcher.get(selected_gwas)
 
 
-def make_winnow_json(job_name, gwas_folder, ote_file):
+def make_winnow_json(job_name, gwas_output_folder, ote_file):
     """" Builds JSON files for running Winnow via Agave.
 
     Built from JSON file here: https://raw.githubusercontent.com/CyVerse-Validate/Stampede-Files/master/json/winnow-job.json
     :param job_name: The name of the GWAS program frmo which the output came.
-    :param gwas_folder: A folder containing GWAS outputs.
+    :param gwas_output_folder: A folder containing GWAS outputs.
     :param ote_file: OTE known-truth file for truth testing.
     :return:
     """
 
     json_text = {
-        "jobName" : job_name,
+        "jobName" : 'Winnow_{}'.format(job_name),
         "softwareName" : "Winnow-0.9.2u1",
         "requestedTime" : "02:00:00",
         "archive" : "true",
         "inputs" : {
             "Class" : ote_file,
-            "Folder" : gwas_folder
+            "Folder" : gwas_output_folder
         },
         "parameters" : {
             "SNP": "SNP",
