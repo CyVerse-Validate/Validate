@@ -1,6 +1,7 @@
 import argparse, os, time
 import JsonBuilder
 import AgavePythonSDK as Agave
+from AgavePythonSDK import FilesApi, JobsApi
 
 __author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
@@ -48,17 +49,15 @@ class Pipeline:
         self.finished_gwas = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
         self.output_folders = {}    # Output folder location within the 'Validate' directory
 
-        self.validate()
-
     def validate(self):
         self.checkArgs()
         self.parse_inputs()
         self.build_jsons()
 
         # TODO build gwas files from the given folder.
-        self.gwas_submission()
-        self.finished_gwas = self.poll_jobs(self.running_jobs)
-        self.make_output_folders(self.parse_archives(self.finished_gwas))
+        # self.gwas_submission()
+        # self.finished_gwas = self.poll_jobs(self.running_jobs)
+        # self.make_output_folders(self.parse_archives(self.finished_gwas))
         # TODO Equalise outputs
         # TODO Make Winnow JSONs
         # TODO Submit Winnow
@@ -70,7 +69,7 @@ class Pipeline:
         :return:
         """
         parser = argparse.ArgumentParser()
-        parser.add_argument("-i", "--InFormat", type=chr(1),
+        parser.add_argument("-i", "--InFormat", type=str,
                             help="Input format:\n"
                                  "\tp for PED/MAP\n"
                                  "\tb for BIM/BED/FAM\n"
@@ -91,12 +90,12 @@ class Pipeline:
                             help="\"True\" if QxPak is to be run.")
         parser.add_argument("-g", "--gemma", type=bool,
                             help="\"True\" if Gemma is to be run.")
-        # TODO get parameters for each GWAS somehow
+        # TODO get parameters for each GWAS somehow - potentially JSON?
 
         args = parser.parse_args()
         self.input_format = args.InFormat
         self.data_folder = args.Folder
-        self.desired_gwas = tuple([args.lmm, args.ridge, args.bayes, args.plink,
+        self.desired_gwas = tuple([args.fastlmm, args.ridge, args.bayes, args.plink,
                                    args.qxpak, args.gemma])
 
     def parse_inputs(self):
@@ -302,4 +301,5 @@ class Pipeline:
 
 
 if __name__ == '__main__':
-    Pipeline()
+    pipeline = Pipeline()
+    pipeline.validate()
