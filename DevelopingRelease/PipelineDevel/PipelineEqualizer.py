@@ -185,6 +185,10 @@ class Equalizer:
         :param param_dict:
         :return:
         """
+        # TODO work with on Discovery Environment instead of local machine
+        pass
+
+    def local_equalize(self, output_files, param_dict):
         for out_file in output_files:
             if os.path.splitext(out_file)[1] == ".txt":
                 df = pd.read_table(os.path.abspath(out_file), header=0,

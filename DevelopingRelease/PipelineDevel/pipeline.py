@@ -2,7 +2,7 @@ import argparse, os, time
 import JsonBuilder
 import AgavePythonSDK as Agave
 
-__author__ = "Michael J. Suggs::mjs3607@uncw.edu"
+__author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
 __license__ = "GPL"
 __version__ = "0.0.1"
@@ -11,6 +11,8 @@ __email__ = "mjs3607@uncw.edu"
 __status__ = "Development"
 
 
+# Ramona Walls - Data
+# DOI - used for marking resources
 class Pipeline:
     """Handles automatic job submission and data-handling for the Validate Pipeline.
 
@@ -30,10 +32,13 @@ class Pipeline:
                     Dictionary of currently-running jobs as { 'id' : 'archivePath' }
         finished_gwas : dict{ 'id' : list[RemoteFile] }
                     Dictionary of finished GWAS jobs as { 'id' : list[RemoteFile] }
+        output_folders: dict{ 'id' : list[RemoteFile] }
+                    Each ID is associated with a subdirectory within the
+                    Validate directory on the Data Store.
     """
-    # TODO Change pipeline around to take user folder location
 
     def __init__(self):
+        # self.user_home = Agave.filesApi. TODO get user home directory
         self.data_folder = ""       # User defined folder from the Datastore
         self.inputs = {}
         self.known_truth = ""
@@ -41,14 +46,19 @@ class Pipeline:
         self.desired_gwas = ()      # Tuple of booleans
         self.running_jobs = {}      # Running jobs dictionary with the format { 'id' : 'archivePath' }
         self.finished_gwas = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
+        self.output_folders = {}    # Output folder location within the 'Validate' directory
 
+        self.validate()
+
+    def validate(self):
         self.checkArgs()
         self.parse_inputs()
         self.build_jsons()
 
         # TODO build gwas files from the given folder.
         self.gwas_submission()
-        self.poll_jobs()
+        self.finished_gwas = self.poll_jobs(self.running_jobs)
+        self.make_output_folders(self.parse_archives(self.finished_gwas))
         # TODO Equalise outputs
         # TODO Make Winnow JSONs
         # TODO Submit Winnow
@@ -81,6 +91,7 @@ class Pipeline:
                             help="\"True\" if QxPak is to be run.")
         parser.add_argument("-g", "--gemma", type=bool,
                             help="\"True\" if Gemma is to be run.")
+        # TODO get parameters for each GWAS somehow
 
         args = parser.parse_args()
         self.input_format = args.InFormat
@@ -135,17 +146,17 @@ class Pipeline:
 
         :return:
         """
-        if not self.finished_gwas:
-            self.gwas_jsons = []
-            for gwas in self.desired_gwas:
-                if gwas:
-                    self.gwas_jsons += JsonBuilder.make_gwas_json(
-                        self.desired_gwas.index(gwas), self.dataset_name, self.inputs)
-        else:
-            # Make Winnow JSONs here.
-            self.winnow_jsons = []
-            for gwas_output in self.finished_gwas:
-                pass
+        # if not self.finished_gwas:
+        self.gwas_jsons = []
+        for gwas in self.desired_gwas:
+            if gwas:
+                self.gwas_jsons += JsonBuilder.make_gwas_json(
+                    self.desired_gwas.index(gwas), self.dataset_name, self.inputs)
+        # else:
+        #     Make Winnow JSONs here.
+            # self.winnow_jsons = []
+            # for gwas_output in self.finished_gwas:
+            #     pass
 
     def gwas_submission(self):
         """Submits all provided JSON files via the Agave REST APIs.
@@ -159,7 +170,7 @@ class Pipeline:
             job = Agave.JobsApi.submit(json).swaggerTypes['result']
             self.running_jobs[job.swaggerTypes['id']] = job.swaggerTypes['archivePath']
 
-    def poll_jobs(self):
+    def poll_jobs(self, job_dict):
         """Polls all running jobs for status until completion.
 
         Running jobs are stored in the running_jobs dictionary. Once finished,
@@ -169,10 +180,11 @@ class Pipeline:
         #TODO look at notifications instead?
         #TODO keep data on the datastore - no downloading
         sleep_time = 60
+        finished_jobs = {}
 
         # Iterating through all JobIDs and polling until there are no more jobs
-        while not self.running_jobs.keys():
-            for job_id in self.running_jobs.keys:
+        while not job_dict.keys():
+            for job_id in job_dict.keys:
                 job_status = Agave.JobsApi.getStatus(job_id)
 
                 # If the curernt given job is finished, download output and
@@ -182,12 +194,14 @@ class Pipeline:
                         (job_status.swaggerTypes['status'] == "FINISHED")):
                     # TODO use archive instead of downloading
                     # agave://data.iplantcollaborative.org/<user-home>/archive/jobs/job-<jobID>
-                    self.finished_gwas[job_id] = self.running_jobs[job_id]
-                    del self.running_jobs[job_id]
+                    finished_jobs[job_id] = job_dict[job_id]
+                    del job_dict[job_id]
 
             # Sleep before repolling Agave. Max sleep time is 1 hour.
             time.sleep(sleep_time)
             sleep_time *= 2 if sleep_time <= 3600 else sleep_time
+
+        return finished_jobs
 
     def download_outputs(self, job_id):
         # TODO avoid - work via Agave & Discovery Environment instead
@@ -213,7 +227,7 @@ class Pipeline:
                           '.param']
         job_output_dict = {}
 
-        # Iterates thorugh all Job-IDs and collects the output type jobs.
+        # Iterates thorugh all Job-IDs and collects the output files for each
         for jobid in jobid_dict.keys:
             job_outputs = []
             remote_file_list = Agave.FilesApi.listOnDefaultSystem(
@@ -233,31 +247,42 @@ class Pipeline:
         :param job_outputs: Dictionary of { 'jobid' : list(output_paths) }
         :return:
         """
-        output_folders = {}
+        self.output_folders = {}
         Agave.FilesApi.manageOnDefaultSystem(sourcefilePath='.', action='mkdir',
-                                             filePath='Validate GWAS Outputs')
+                                             filePath='Validate')
+        Agave.FilesApi.manageOnDefaultSystem(sourcefilePath='./Validate',
+                                             action='mkdir', filePath='GWAS Outputs')
 
         # Loops through all finished Job IDs and creates a subdirectory within
         # the 'Validate GWAS Outputs' folder defined above simply named after
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys:
             Agave.FilesApi.manageOnDefaultSystem(
-                sourcefilePath='./Validate GWAS Outputs', action='mkdir',
+                sourcefilePath='./Validate/GWAS Outputs', action='mkdir',
                 filePath=jobid)
 
-            # Moving all job outputs from the system archive directory to the
-            # newly created subdirectory.
+            # Copying all job outputs from the system archive directory to the
+            # newly created subdirectory, leaving the original archive as is.
             for file in job_outputs[jobid]:
                 Agave.FilesApi.manageOnDefaultSystem(
-                    sourcefilePath='./Validate GWAS Outputs/{}'.format(jobid),
+                    sourcefilePath='./Validate/GWAS Outputs/{}'.format(jobid),
                     action='cp', filePath=file)
 
-    def create_winnow_jsons(self):
-        # Files are located in /iplant/home/<user-dir>/archive/jobs/job-<jobid>
-        for jobid, remotelist in self.finished_gwas:
-            JsonBuilder.make_winnow_json(jobid, gwas_output_folder=, ote_file=self.known_truth)
+            # TODO get Validate GWAS Outputs full path
+            self.output_folders[jobid] = Agave.FilesApi.listOnDefaultSystem(
+                filePath='./Validate/GWAS Outputs/').swaggerTypes['result']
 
-    def winnow_submission(self):
+    def create_winnow_jsons(self, output_folders):
+        # Files are located in /iplant/home/<user-dir>/archive/jobs/job-<jobid>
+        winnow_jsons = []
+
+        for jobid in output_folders.keys():
+            winnow_jsons += JsonBuilder.make_winnow_json(
+                jobid, output_folders[jobid], self.known_truth)
+
+        return winnow_jsons
+
+    def winnow_submission(self, winnow_jsons):
         #FaST-LMM uses the base filename for the input files for its output
         # e.g./ <input-file-name>.out.txt
         #
@@ -271,10 +296,9 @@ class Pipeline:
         # QxPak single output file - qxpak.out.
         #
         # Gemma ???
-        pass
-
-    def demonstrate_submission(self):
-        pass
+        for json in winnow_jsons:
+            winnow_submission = Agave.JobsApi.submit(json).swaggerTypes['result']
+            self.running_jobs[winnow_submission.swaggerTypes['id']] = winnow_submission
 
 
 if __name__ == '__main__':
