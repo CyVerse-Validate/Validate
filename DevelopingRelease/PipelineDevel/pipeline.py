@@ -1,7 +1,8 @@
 import argparse, os, time
 import JsonBuilder
 import AgavePythonSDK as Agave
-from AgavePythonSDK import FilesApi, JobsApi
+from AgavePythonSDK.FilesApi import *
+from AgavePythonSDK.JobsApi import *
 
 __author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
@@ -49,7 +50,20 @@ class Pipeline:
         self.finished_gwas = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
         self.output_folders = {}    # Output folder location within the 'Validate' directory
 
+    def agave_initialization(self):
+        """Initializes the Agave API Client as well as all necessary modules.
+
+        :return:
+        """
+        # TODO initialise an APIClient from agave.py with a key
+        # TODO Pass that APIClient to FilesApi and JobsApi for instantiation
+        pass
+
     def validate(self):
+        """Main run method for the Validate Workflow.
+
+        :return:
+        """
         self.checkArgs()
         self.parse_inputs()
         self.build_jsons()
@@ -103,7 +117,7 @@ class Pipeline:
 
         :return:
         """
-        file_list = Agave.FilesApi.listOnDefaultSystem(self.data_folder).swaggerTypes['result']
+        file_list = FilesApi.listOnDefaultSystem(self.data_folder).swaggerTypes['result']
 
         # If the input data was declared as PED/MAP
         if self.input_format == 'p':
@@ -166,7 +180,7 @@ class Pipeline:
         :return:
         """
         for json in self.gwas_json:
-            job = Agave.JobsApi.submit(json).swaggerTypes['result']
+            job = JobsApi.submit(json).swaggerTypes['result']
             self.running_jobs[job.swaggerTypes['id']] = job.swaggerTypes['archivePath']
 
     def poll_jobs(self, job_dict):
@@ -184,7 +198,7 @@ class Pipeline:
         # Iterating through all JobIDs and polling until there are no more jobs
         while not job_dict.keys():
             for job_id in job_dict.keys:
-                job_status = Agave.JobsApi.getStatus(job_id)
+                job_status = JobsApi.getStatus(job_id)
 
                 # If the curernt given job is finished, download output and
                 # remove it from the running queue. The finished job and its
@@ -210,8 +224,8 @@ class Pipeline:
         os.chdir(job_id)
 
         # Getting the list of outputs for a given job and downloading
-        self.finished_gwas[job_id] = Agave.JobsApi.listOutputs(job_id, self.running_jobs[job_id])
-        Agave.JobsApi.downloadOutput(job_id)
+        self.finished_gwas[job_id] = JobsApi.listOutputs(job_id, self.running_jobs[job_id])
+        JobsApi.downloadOutput(job_id)
         del self.running_jobs[job_id]
 
         os.chdir("../")
@@ -229,7 +243,7 @@ class Pipeline:
         # Iterates thorugh all Job-IDs and collects the output files for each
         for jobid in jobid_dict.keys:
             job_outputs = []
-            remote_file_list = Agave.FilesApi.listOnDefaultSystem(
+            remote_file_list = FilesApi.listOnDefaultSystem(
                 filePath="/archive/jobs/job-{}".format(jobid)).swaggerTypes['result']
 
             for file in remote_file_list:
@@ -247,28 +261,28 @@ class Pipeline:
         :return:
         """
         self.output_folders = {}
-        Agave.FilesApi.manageOnDefaultSystem(sourcefilePath='.', action='mkdir',
+        FilesApi.manageOnDefaultSystem(sourcefilePath='.', action='mkdir',
                                              filePath='Validate')
-        Agave.FilesApi.manageOnDefaultSystem(sourcefilePath='./Validate',
+        FilesApi.manageOnDefaultSystem(sourcefilePath='./Validate',
                                              action='mkdir', filePath='GWAS Outputs')
 
         # Loops through all finished Job IDs and creates a subdirectory within
         # the 'Validate GWAS Outputs' folder defined above simply named after
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys:
-            Agave.FilesApi.manageOnDefaultSystem(
+            FilesApi.manageOnDefaultSystem(
                 sourcefilePath='./Validate/GWAS Outputs', action='mkdir',
                 filePath=jobid)
 
             # Copying all job outputs from the system archive directory to the
             # newly created subdirectory, leaving the original archive as is.
             for file in job_outputs[jobid]:
-                Agave.FilesApi.manageOnDefaultSystem(
+                FilesApi.manageOnDefaultSystem(
                     sourcefilePath='./Validate/GWAS Outputs/{}'.format(jobid),
                     action='cp', filePath=file)
 
             # TODO get Validate GWAS Outputs full path
-            self.output_folders[jobid] = Agave.FilesApi.listOnDefaultSystem(
+            self.output_folders[jobid] = FilesApi.listOnDefaultSystem(
                 filePath='./Validate/GWAS Outputs/').swaggerTypes['result']
 
     def create_winnow_jsons(self, output_folders):
@@ -296,7 +310,7 @@ class Pipeline:
         #
         # Gemma ???
         for json in winnow_jsons:
-            winnow_submission = Agave.JobsApi.submit(json).swaggerTypes['result']
+            winnow_submission = JobsApi.submit(json).swaggerTypes['result']
             self.running_jobs[winnow_submission.swaggerTypes['id']] = winnow_submission
 
 

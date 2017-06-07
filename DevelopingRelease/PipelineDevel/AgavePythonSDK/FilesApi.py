@@ -246,7 +246,7 @@ class FilesApi(object):
         return responseObject
         
         
-    def import(self, systemId, filePath, **kwargs):
+    def importFile(self, systemId, filePath, **kwargs):
         """Import a file via direct upload or importing from a url to the user's default storage location.
 
         Args:
