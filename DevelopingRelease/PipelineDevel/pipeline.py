@@ -1,8 +1,11 @@
 import argparse, os, time
+from getpass import getpass
+
 import JsonBuilder
-import AgavePythonSDK as Agave
 from AgavePythonSDK.FilesApi import *
 from AgavePythonSDK.JobsApi import *
+from oauthlib import oauth2
+import requests
 
 __author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
@@ -13,8 +16,6 @@ __email__ = "mjs3607@uncw.edu"
 __status__ = "Development"
 
 
-# Ramona Walls - Data
-# DOI - used for marking resources
 class Pipeline:
     """Handles automatic job submission and data-handling for the Validate Pipeline.
 
@@ -50,20 +51,41 @@ class Pipeline:
         self.finished_gwas = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
         self.output_folders = {}    # Output folder location within the 'Validate' directory
 
+        self.agave_initialization()
+
     def agave_initialization(self):
         """Initializes the Agave API Client as well as all necessary modules.
 
         :return:
         """
+        # TODO Get auth key via OAuthLib
         # TODO initialise an APIClient from agave.py with a key
         # TODO Pass that APIClient to FilesApi and JobsApi for instantiation
-        pass
+
+        password = getpass()
+
+        # TODO need client_id, client_secret, grant_type, username, password
+        payload = {
+            'Authorization': "Basic ",  # base 64 encoded string with client-id and client-secret
+            'grant_type': "refresh_token",
+            'username': self.username,
+            'password': password,
+            'scope': 'PRODUCTION'
+        }
+        auth = ('BOI3cMLqSweD21NxrwZbu3Eihmwa', ' XXXXXXXXXXXXXXXX')
+        token = requests.post('https://public.tenants.agaveapi.co/token',
+                              data=payload, auth=auth)
+
+        del password
+        return token
 
     def validate(self):
         """Main run method for the Validate Workflow.
 
         :return:
         """
+        # TODO add option for the user to upload their own data from their local machines
+        # TODO add simulation option
         self.checkArgs()
         self.parse_inputs()
         self.build_jsons()
@@ -82,7 +104,11 @@ class Pipeline:
 
         :return:
         """
+        # TODO add simulation || prediction || gwas
+        # if simulation, make simulated data and folder for data before validating
         parser = argparse.ArgumentParser()
+        parser.add_argument("-u", "--username", type=str,
+                            help="Username used for Agave Services.")
         parser.add_argument("-i", "--InFormat", type=str,
                             help="Input format:\n"
                                  "\tp for PED/MAP\n"
@@ -107,6 +133,7 @@ class Pipeline:
         # TODO get parameters for each GWAS somehow - potentially JSON?
 
         args = parser.parse_args()
+        self.username = args.username
         self.input_format = args.InFormat
         self.data_folder = args.Folder
         self.desired_gwas = tuple([args.fastlmm, args.ridge, args.bayes, args.plink,
@@ -117,6 +144,7 @@ class Pipeline:
 
         :return:
         """
+        # TODO pull phenotype file too
         file_list = FilesApi.listOnDefaultSystem(self.data_folder).swaggerTypes['result']
 
         # If the input data was declared as PED/MAP
@@ -138,7 +166,7 @@ class Pipeline:
                     self.inputs['inputBED'] = file.swaggerTypes['path']
                 elif '.bim' in file.swaggerTypes['name']:
                     self.inputs['inputBIM'] = file.swaggerTypes['path']
-                elif 'fam' in file.swaggerTypes['name']:
+                elif '.fam' in file.swaggerTypes['name']:
                     self.inputs['inputFAM'] = file.swaggerTypes['path']
 
         # If the input data was declared as TPED/TMAP
@@ -192,6 +220,7 @@ class Pipeline:
         """
         #TODO look at notifications instead?
         #TODO keep data on the datastore - no downloading
+        # Instead of polling jobs, check if a directory has been created in the archive
         sleep_time = 60
         finished_jobs = {}
 
@@ -216,19 +245,19 @@ class Pipeline:
 
         return finished_jobs
 
-    def download_outputs(self, job_id):
-        # TODO avoid - work via Agave & Discovery Environment instead
-        # Make a new directory for the current job's output
-        if not os.path.exists():
-            os.makedirs(job_id)
-        os.chdir(job_id)
-
-        # Getting the list of outputs for a given job and downloading
-        self.finished_gwas[job_id] = JobsApi.listOutputs(job_id, self.running_jobs[job_id])
-        JobsApi.downloadOutput(job_id)
-        del self.running_jobs[job_id]
-
-        os.chdir("../")
+    # def download_outputs(self, job_id):
+    #     # TODO avoid - work via Agave & Discovery Environment instead
+    #     # Make a new directory for the current job's output
+    #     if not os.path.exists():
+    #         os.makedirs(job_id)
+    #     os.chdir(job_id)
+    #
+    #     # Getting the list of outputs for a given job and downloading
+    #     self.finished_gwas[job_id] = JobsApi.listOutputs(job_id, self.running_jobs[job_id])
+    #     JobsApi.downloadOutput(job_id)
+    #     del self.running_jobs[job_id]
+    #
+    #     os.chdir("../")
 
     def parse_archives(self, jobid_dict):
         """Parses job output archives on the Discovery Environment via Agave.
@@ -260,6 +289,7 @@ class Pipeline:
         :param job_outputs: Dictionary of { 'jobid' : list(output_paths) }
         :return:
         """
+        # TODO add timestamp to each validate 'run' OR user-provided name
         self.output_folders = {}
         FilesApi.manageOnDefaultSystem(sourcefilePath='.', action='mkdir',
                                              filePath='Validate')
