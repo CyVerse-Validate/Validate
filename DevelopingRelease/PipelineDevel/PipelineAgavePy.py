@@ -38,6 +38,7 @@ class Pipeline:
 
     def __init__(self):
         # self.user_home = Agave.filesApi. TODO get user home directory
+        self.agave = None
         self.username = ""          # User's username
         self.data_folder = ""       # User defined folder from the Datastore
         self.input_format = ""      # Type of inputs the user is providing
@@ -93,6 +94,77 @@ class Pipeline:
 
     def agave_initialization(self):
         password = getpass()
-        agave_conn = a.Agave(api_server='https://agave.iplantc.org',
+        self.agave = a.Agave(api_server='https://agave.iplantc.org',
                              username=self.username, password=password,
                              verify=False)
+
+        # Check for an existing Agave client
+        # If none exists, a new one is created
+        client = [cl for cl in self.agave.clients.list() if cl['name'] == 'pipelineClient']
+        if not client:
+            client = self.agave.clients.create(body={'clientName': 'pipelineClient'})
+
+        # Creating CyVerse DE storage system connections
+        cyverse_de = {
+            "id": "de.cyverseorg.",
+            "name": "Agavepy test storage system",
+            "status": "UP",
+            "type": "STORAGE",
+            "description": "Storage system for agavepy test",
+            "site": "de.cyverse.org",
+            "storage": {
+                "host": STORAGE_IP, # 128.196.254.62 (?)
+                "port": 22,
+                "protocol": "SFTP",
+                "rootDir": "/",
+                "homeDir": "/home/{}".format(self.username),
+                "auth": {
+                    "username": STORAGE_USERNAME,
+                    "type": "PASSWORD",
+                    "password": STORAGE_PASSWORD
+                }
+            }
+        }
+        self.agave.systems.add(body=cyverse_de);
+
+    def parse_inputs(self):
+        """Grabs the known-truth and all input files from the given directory.
+
+        :return:
+        """
+        # TODO pull phenotype file too
+        file_list = [f for f in self.agave.files.list(
+            systemId='de.cyverse.org', filePath='/home/{}'.format(self.username))]
+
+        # TODO error check if no input file is found
+        # If the input data was declared as PED/MAP
+        if self.input_format == 'p':
+            for file in file_list:
+                if ".ote" in file.name:
+                    self.known_truth = file
+                elif ".ped" in file.name:
+                    self.inputs['inputPED'] = file
+                elif ".map" in file.name:
+                    self.inputs['inputMAP'] = file
+
+        # If the input data was declared as BIM/BED/FAM
+        elif self.input_format == 'b':
+            for file in file_list:
+                if ".ote" in file.name:
+                    self.known_truth = file
+                elif '.bed' in file.name:
+                    self.inputs['inputBED'] = file
+                elif '.bim' in file.name:
+                    self.inputs['inputBIM'] = file
+                elif '.fam' in file.name:
+                    self.inputs['inputFAM'] = file
+
+        # If the input data was declared as TPED/TMAP
+        else:
+            for file in file_list:
+                if ".ote" in file.name:
+                    self.known_truth = file
+                elif ".tped" in file.name:
+                    self.inputs['inputTPED'] = file
+                elif ".tfam" in file.name:
+                    self.inputs['inputTFAM'] = file
