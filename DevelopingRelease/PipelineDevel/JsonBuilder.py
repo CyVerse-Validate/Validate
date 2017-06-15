@@ -116,12 +116,7 @@ def qxpak_json(data_name, input_dict):
         "name": "QxPak_{}".format(data_name),
         "appId": "qxpak-stampede-5.05u2",
         "archive": True,
-        "inputs": {
-            "parameter_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/parameterFile.par",
-            "data_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/dataFile.dat",
-            "pedigree_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/pedigreeFile.ped",
-            "marker_file": "agave://data.iplantcollaborative.org/home/shared/iplantcollaborative/example_data/qxpak/input/markerFile.mkr"
-        },
+        "inputs": input_dict,
         "parameter": {
             "output": "test"
         }
@@ -132,6 +127,24 @@ def qxpak_json(data_name, input_dict):
 def gemma_json(data_name, input_dict):
     pass
 
+def puma_json(data_name, input_dict):
+    json_text = {
+        "jobName": "puma-test-1",
+        "softwareName": "Puma-1.0u1",
+        "processorsPerNode": 16,
+        "requestedTime": "01:00:00",
+        "memoryPerNode": 32,
+        "nodeCount": 1,
+        "batchQueue": "serial",
+        "archive": True,
+        "archivePath": "",
+        "inputs": input_dict,
+        "parameters":{
+            "regression": "LINEAR",
+            "penalty":"LASSO",
+            "name":"try1"
+        }
+    }
 
 def make_gwas_json(selected_gwas, dataset_name, inputs):
     """Selected GWAS is a list of binary values with each element representing
@@ -146,7 +159,8 @@ def make_gwas_json(selected_gwas, dataset_name, inputs):
         2: bayesr_json(dataset_name, inputs),
         3: plink_json(dataset_name),
         4: qxpak_json(dataset_name, inputs),
-        5: gemma_json(dataset_name, inputs)
+        5: gemma_json(dataset_name, inputs),
+        6: puma_json(dataset_name, inputs)
     }
 
     return switcher.get(selected_gwas)

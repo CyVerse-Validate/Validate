@@ -72,6 +72,7 @@ class Pipeline:
             'password': password,
             'scope': 'PRODUCTION'
         }
+
         auth = ('BOI3cMLqSweD21NxrwZbu3Eihmwa', ' XXXXXXXXXXXXXXXX')
         token = requests.post('https://public.tenants.agaveapi.co/token',
                               data=payload, auth=auth)
@@ -147,6 +148,7 @@ class Pipeline:
         # TODO pull phenotype file too
         file_list = FilesApi.listOnDefaultSystem(self.data_folder).swaggerTypes['result']
 
+        # TODO error check if no input file is found
         # If the input data was declared as PED/MAP
         if self.input_format == 'p':
             for file in file_list:
