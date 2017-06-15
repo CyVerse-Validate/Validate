@@ -22,10 +22,10 @@ def fastlmm_json(data_name, input_dict):
         }
     }
 
-    file_name = 'FaST-LMM_{}.json'.format(data_name)
-    with open(file_name, 'w') as f:
-        json.dumps(json_text, f)
-    return file_name
+    # file_name = 'FaST-LMM_{}.json'.format(data_name)
+    # with open(file_name, 'w') as f:
+    #     json.dumps(json_text, f)
+    return json_text
 
 
 def ridge_json(data_name, input_dict):
@@ -47,10 +47,10 @@ def ridge_json(data_name, input_dict):
         }
     }
 
-    file_name = 'RidgePredict_{}.json'.format(data_name)
-    with open(file_name, 'w') as f:
-        json.dumps(json_text, f)
-    return file_name
+    # file_name = 'RidgePredict_{}.json'.format(data_name)
+    # with open(file_name, 'w') as f:
+    #     json.dumps(json_text, f)
+    return json_text
 
 
 def bayesr_json(data_name, input_dict):
@@ -75,10 +75,10 @@ def bayesr_json(data_name, input_dict):
         }
     }
 
-    file_name = 'BayesR_{}.json'.format(data_name)
-    with open(file_name, 'w') as f:
-        json.dumps(json_text, f)
-    return file_name
+    # file_name = 'BayesR_{}.json'.format(data_name)
+    # with open(file_name, 'w') as f:
+    #     json.dumps(json_text, f)
+    return json_text
 
 
 def plink_json(data_name):
@@ -104,10 +104,10 @@ def plink_json(data_name):
         }
     }
 
-    file_name = 'PLINK_{}.json'.format(data_name)
-    with open(file_name, 'w') as f:
-        json.dumps(json_text, f)
-    return file_name
+    # file_name = 'PLINK_{}.json'.format(data_name)
+    # with open(file_name, 'w') as f:
+    #     json.dumps(json_text, f)
+    return json_text
 
 
 #TODO make current pipeline implementation work with this input format
@@ -120,8 +120,9 @@ def qxpak_json(data_name, input_dict):
         "parameter": {
             "output": "test"
         }
-
     }
+
+    return json_text
 
 #TODO find Gemma JSON?
 def gemma_json(data_name, input_dict):
@@ -145,6 +146,8 @@ def puma_json(data_name, input_dict):
             "name":"try1"
         }
     }
+
+    return json_text
 
 def make_gwas_json(selected_gwas, dataset_name, inputs):
     """Selected GWAS is a list of binary values with each element representing
@@ -196,7 +199,7 @@ def make_winnow_json(job_name, gwas_output_folder, ote_file):
         }
     }
 
-    file_name = 'winnow-{}.json'.format(job_name)
-    with open(file_name, 'w') as f:
-        json_text = json.dumps(json_text, f)
-    return file_name
+    # file_name = 'winnow-{}.json'.format(job_name)
+    # with open(file_name, 'w') as f:
+    #     json_text = json.dumps(json_text, f)
+    return json_text

@@ -3,6 +3,10 @@ import argparse
 from getpass import getpass
 import json
 
+import time
+
+import JsonBuilder
+
 __author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
 __license__ = "GPL"
@@ -51,6 +55,27 @@ class Pipeline:
         self.output_folders = {}    # Output folder location within the 'Validate' directory
 
         self.agave_initialization()
+        self.validate()
+
+    def validate(self):
+        """Main run method for the Validate Workflow.
+
+        :return:
+        """
+        # TODO add option for the user to upload their own data from their local machines
+        # TODO add simulation option
+        self.checkArgs()
+        self.parse_inputs()
+        self.build_jsons()
+
+        # TODO build gwas files from the given folder.
+        # self.gwas_submission()
+        # self.finished_gwas = self.poll_jobs(self.running_jobs)
+        # self.make_output_folders(self.parse_archives(self.finished_gwas))
+        # TODO Equalise outputs
+        # TODO Make Winnow JSONs
+        # TODO Submit Winnow
+        # TODO Retrieve Winnow outputs
 
     def checkArgs(self):
         """Checks all command-line arguments provided in the command-line call.
@@ -168,3 +193,68 @@ class Pipeline:
                     self.inputs['inputTPED'] = file
                 elif ".tfam" in file.name:
                     self.inputs['inputTFAM'] = file
+
+    def build_jsons(self):
+        """Builds JSONs from the parsed input information.
+
+        If there are no finished GWAS jobs, this method will default to building
+        JSONs for Winnow from the GWAS output files.
+
+        :return:
+        """
+        # if not self.finished_gwas:
+        self.gwas_jsons = []
+        for gwas in self.desired_gwas:
+            if gwas:
+                self.gwas_jsons += JsonBuilder.make_gwas_json(
+                    self.desired_gwas.index(gwas), self.dataset_name, self.inputs)
+                # else:
+                #     Make Winnow JSONs here.
+                # self.winnow_jsons = []
+                # for gwas_output in self.finished_gwas:
+                #     pass
+
+    def gwas_submission(self):
+        """Submits all provided JSON files via the Agave REST APIs.
+        All currently running jobs are stored in the 'running_jobs' dictionary,
+        which has the format of { 'job[id]' : 'Job' } with 'Job' being the
+        Job.py response from the server given upon job submission.
+
+        :return:
+        """
+        for json in self.gwas_jsons:
+            job = self.agave.jobs.submit(json)
+            self.running_jobs[job['id']] = job
+
+    def poll_jobs(self, job_dict):
+        """Polls all running jobs for status until completion.
+
+        Running jobs are stored in the running_jobs dictionary. Once finished,
+        jobs are removed and added to the finished_gwas dictionary for easy
+        tracking and handling for running through Winnow.
+        """
+        #TODO look at notifications instead?
+        #TODO keep data on the datastore - no downloading
+        # Instead of polling jobs, check if a directory has been created in the archive
+        sleep_time = 60
+        finished_jobs = {}
+
+        # Iterating through all JobIDs and polling until there are no more jobs
+        while not job_dict.keys():
+            for job_id in job_dict.keys:
+                job_status = self.agave.jobs.getStatus(job_id)
+
+                # If the curernt given job is finished, download output and
+                # remove it from the running queue. The finished job and its
+                # output list is added to the finished_gwas dictionary.
+                if (job_status.status == "FINISHED"):
+                    # TODO use archive instead of downloading
+                    # agave://data.iplantcollaborative.org/<user-home>/archive/jobs/job-<jobID>
+                    finished_jobs[job_id] = job_dict[job_id]
+                    del job_dict[job_id]
+
+            # Sleep before repolling Agave. Max sleep time is 1 hour.
+            time.sleep(sleep_time)
+            sleep_time *= 2 if sleep_time <= 3600 else sleep_time
+
+        return finished_jobs
