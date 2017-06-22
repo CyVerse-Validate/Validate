@@ -1,11 +1,11 @@
 import agavepy.agave as a
 import argparse
+import requests
 from getpass import getpass
-import json
-
 import time
-
+import json
 import JsonBuilder
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 __author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
@@ -41,9 +41,17 @@ class Pipeline:
     """
 
     def __init__(self):
+        # Cleaning up console output
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
         # self.user_home = Agave.filesApi. TODO get user home directory
         self.agave = None
-        self.username = ""          # User's username
+        self.access_token = None
+
+        self.username = 'mjs3607'
+        self.password = 'Pixi3-W0rk-F00tpath'
+        self.home_dir = '/{}'.format(self.username)
+
         self.data_folder = ""       # User defined folder from the Datastore
         self.input_format = ""      # Type of inputs the user is providing
         self.inputs = {}
@@ -54,8 +62,38 @@ class Pipeline:
         self.finished_gwas = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
         self.output_folders = {}    # Output folder location within the 'Validate' directory
 
+        print "Beginning Agave init."
         self.agave_initialization()
+        # self.cyverse_test()
         self.validate()
+
+    def agave_initialization(self):
+        # password = getpass()
+        self.agave = a.Agave(api_server='https://agave.iplantc.org',
+                             username=self.username, password=self.password,
+                             verify=False)
+
+        # Check for an existing Agave client
+        # If none exists, a new one is created
+        self.client = [cl for cl in self.agave.clients.list() if cl['name'] == 'pipelineClient']
+        if not self.client:
+            print "Making new Agave client."
+            self.client = self.agave.clients.create(
+                body={'clientName': 'pipelineClient'})
+        else:
+            print "Pipeline client extant."
+            self.agave.clients.delete(clientName='pipelineClient')
+            self.client = self.agave.clients.create(body={'clientName': 'pipelineClient'})
+
+        self.access_token = self.agave.token
+
+    def cyverse_test(self):
+        file_list = [f for f in self.agave.files.list(
+            systemId='data.iplantcollaborative.org', filePath=self.home_dir)]
+
+        print "\n\nFiles:"
+        for file in file_list:
+            print file
 
     def validate(self):
         """Main run method for the Validate Workflow.
@@ -116,41 +154,6 @@ class Pipeline:
         self.data_folder = args.Folder
         self.desired_gwas = tuple([args.fastlmm, args.ridge, args.bayes, args.plink,
                                    args.qxpak, args.gemma])
-
-    def agave_initialization(self):
-        password = getpass()
-        self.agave = a.Agave(api_server='https://agave.iplantc.org',
-                             username=self.username, password=password,
-                             verify=False)
-
-        # Check for an existing Agave client
-        # If none exists, a new one is created
-        client = [cl for cl in self.agave.clients.list() if cl['name'] == 'pipelineClient']
-        if not client:
-            client = self.agave.clients.create(body={'clientName': 'pipelineClient'})
-
-        # Creating CyVerse DE storage system connections
-        cyverse_de = {
-            "id": "de.cyverseorg.",
-            "name": "Agavepy test storage system",
-            "status": "UP",
-            "type": "STORAGE",
-            "description": "Storage system for agavepy test",
-            "site": "de.cyverse.org",
-            "storage": {
-                "host": STORAGE_IP, # 128.196.254.62 (?)
-                "port": 22,
-                "protocol": "SFTP",
-                "rootDir": "/",
-                "homeDir": "/home/{}".format(self.username),
-                "auth": {
-                    "username": STORAGE_USERNAME,
-                    "type": "PASSWORD",
-                    "password": STORAGE_PASSWORD
-                }
-            }
-        }
-        self.agave.systems.add(body=cyverse_de);
 
     def parse_inputs(self):
         """Grabs the known-truth and all input files from the given directory.
@@ -247,7 +250,8 @@ class Pipeline:
                 # If the curernt given job is finished, download output and
                 # remove it from the running queue. The finished job and its
                 # output list is added to the finished_gwas dictionary.
-                if (job_status.status == "FINISHED"):
+                # TODO Check for failed jobs / etc.
+                if (job_status['status'] == "FINISHED"):
                     # TODO use archive instead of downloading
                     # agave://data.iplantcollaborative.org/<user-home>/archive/jobs/job-<jobID>
                     finished_jobs[job_id] = job_dict[job_id]
@@ -255,6 +259,67 @@ class Pipeline:
 
             # Sleep before repolling Agave. Max sleep time is 1 hour.
             time.sleep(sleep_time)
-            sleep_time *= 2 if sleep_time <= 3600 else sleep_time
+            sleep_time *= 2 if sleep_time <= 1800 else sleep_time
 
         return finished_jobs
+
+    def parse_archives(self, jobid_dict):
+        """Parses job output archives on the Discovery Environment via Agave.
+
+        :param jobid_dict: Dictionary with the Agave job-id as keys.
+        :return:
+        """
+        out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.log', '.model',
+                          '.param']
+        job_output_dict = {}
+
+        # Iterates thorugh all Job-IDs and collects the output files for each
+        for jobid in jobid_dict.keys:
+            job_outputs = []
+            remote_file_list = self.agave.files.list(
+                filePath=self.home_dir + "/archive/jobs/job-{}".format(jobid))
+
+            for file in remote_file_list:
+                if any(out_extensions) in file['name']:
+                    job_outputs.append(file['path'])
+
+            job_output_dict[jobid] = job_outputs
+
+        return job_output_dict
+
+    def make_output_folders(self, job_outputs):
+        """Makes folders of all outputs for each finished GWAS job.
+
+        :param job_outputs: Dictionary of { 'jobid' : list(output_paths) }
+        :return:
+        """
+        # TODO add timestamp to each validate 'run' OR user-provided name
+        self.output_folders = {}
+        self.agave.files
+        # {"action":"mkdir","path":"$NEWDIR"}
+        FilesApi.manageOnDefaultSystem(sourcefilePath='.', action='mkdir',
+                                             filePath='Validate')
+        FilesApi.manageOnDefaultSystem(sourcefilePath='./Validate',
+                                             action='mkdir', filePath='GWAS Outputs')
+
+        # Loops through all finished Job IDs and creates a subdirectory within
+        # the 'Validate GWAS Outputs' folder defined above simply named after
+        # each Job ID. All outputs are stored here for easy access.
+        for jobid in job_outputs.keys:
+            FilesApi.manageOnDefaultSystem(
+                sourcefilePath='./Validate/GWAS Outputs', action='mkdir',
+                filePath=jobid)
+
+            # Copying all job outputs from the system archive directory to the
+            # newly created subdirectory, leaving the original archive as is.
+            for file in job_outputs[jobid]:
+                FilesApi.manageOnDefaultSystem(
+                    sourcefilePath='./Validate/GWAS Outputs/{}'.format(jobid),
+                    action='cp', filePath=file)
+
+            # TODO get Validate GWAS Outputs full path
+            self.output_folders[jobid] = FilesApi.listOnDefaultSystem(
+                filePath='./Validate/GWAS Outputs/').swaggerTypes['result']
+
+if __name__ == '__main__':
+    Pipeline()
