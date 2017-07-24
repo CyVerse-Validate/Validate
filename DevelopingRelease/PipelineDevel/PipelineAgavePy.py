@@ -1,4 +1,4 @@
-import json as JSON
+import json
 import agavepy.agave as a
 import argparse
 import requests
@@ -69,13 +69,20 @@ class Pipeline:
 
         print "Beginning Agave init."
         self.agave_initialization()
-        # self.cyverse_test()
-        self.validate()
+        self.cyverse_test()
+        # self.validate()
 
     def agave_initialization(self):
+        """Initializes Agave client via AgavePy for executing desired jobs on Stampede.
+
+        :return:
+        """
+
+        #TODO encapsulate
         if len(self.password) == 0:
             self.password = getpass()
 
+        # Establishing connection with Agave using the user's allocation username and password
         self.agave = a.Agave(api_server='https://agave.iplantc.org',
                              username=self.username, password=self.password,
                              verify=False)
@@ -87,17 +94,22 @@ class Pipeline:
             print "Making new Agave client."
             self.client = self.agave.clients.create(
                 body={'clientName': 'pipelineClient'})
+
         else:
             print "Pipeline client extant."
             self.agave.clients.delete(clientName='pipelineClient')
             self.client = self.agave.clients.create(body={'clientName': 'pipelineClient'})
 
+        # Grabbing token and links from the created Agave client
         self.access_token = self.agave.token
-
         self.home_dir = '/{}'.format(self.username)
         self.home_full = 'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org/' + self.home_dir
 
     def cyverse_test(self):
+        """
+
+        :return:
+        """
         print "Data folder: {}".format(self.data_folder)
         print "Full path:   {}".format(self.home_full + self.data_folder)
         print "\n\n\n"
@@ -107,12 +119,23 @@ class Pipeline:
         #     print system
         #     print "\n\n\n"
 
-        file_list = [f for f in self.agave.files.list(
-            systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
+        print "Systems:"
+        system_list = self.agave.systems.list()
+        for system in system_list:
+            print "{}\n".format(system['id'])
 
         print "\n\nFiles:"
+        file_list = [f for f in self.agave.files.list(
+            systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
         for file in file_list:
-            print "{}\n".format(file)
+            print "{}:\t{}\n".format(file['name'], file['path'])
+
+        print "\n\nApps:"
+        apps_list = self.agave.apps.list()
+        for app in apps_list:
+            print "{}:\n".format(app['id'])
+
+        print self.agave.apps.get(appId='Puma-1.0u1')
 
     def validate(self):
         """Main run method for the Validate Workflow.
@@ -155,18 +178,20 @@ class Pipeline:
                                  "contain all input data as well as the known-truth"
                                  "file for the given data set and be a path"
                                  "relative to the \"/iplant/home\" directory.")
-        parser.add_argument("-l", "--fastlmm", type=bool,
+        parser.add_argument("-lmm", "--fastlmm", type=bool,
                             help="\"True\" if FaST-LMM is to be run.")
-        parser.add_argument("-r", "--ridge", type=bool,
+        parser.add_argument("-rdg", "--ridge", type=bool,
                             help="\"True\" if Ridge is to be run.")
-        parser.add_argument("-b", "--bayes", type=bool,
+        parser.add_argument("-bay", "--bayes", type=bool,
                             help="\"True\" if BayesR is to be run.")
-        parser.add_argument("-p", "--plink", type=bool,
+        parser.add_argument("-plk", "--plink", type=bool,
                             help="\"True\" if PLINK is to be run.")
-        parser.add_argument("-q", "--qxpak", type=bool,
+        parser.add_argument("-qxp", "--qxpak", type=bool,
                             help="\"True\" if QxPak is to be run.")
-        parser.add_argument("-g", "--gemma", type=bool,
+        parser.add_argument("-gma", "--gemma", type=bool,
                             help="\"True\" if Gemma is to be run.")
+        parser.add_argument("-pma", "--puma", type=bool,
+                            help="\"True\" if Puma is to be run.")
 
         # TODO get parameters for each GWAS somehow - potentially JSON?
         # TODO Add option for user to pass in their own JSONs instead of a folder
@@ -177,7 +202,8 @@ class Pipeline:
         self.input_format = args.InFormat
         self.data_folder = args.Folder if args.Folder.startswith("/") else "/" + args.Folder
         self.desired_gwas = tuple([args.fastlmm, args.ridge, args.bayes, args.plink,
-                                   args.qxpak, args.gemma])
+                                   args.qxpak, args.gemma, args.puma])
+        self.dataset_name = self.data_folder.split("/")[-1]
         # TODO Add option for expandable apps?
 
     def parse_inputs(self):
@@ -244,20 +270,22 @@ class Pipeline:
                 #     pass
 
         # TODO delete print
-        for json in self.gwas_jsons:
-            print "{}".format(json)
+        for JSON in self.gwas_jsons:
+            print "{}".format(JSON)
 
     def gwas_submission(self):
-        """Submits all provided JSON files via the Agave REST APIs.
+        """Submits all provided JSON files via AgavePy.
         All currently running jobs are stored in the 'running_jobs' dictionary,
-        which has the format of { 'job[id]' : 'Job' } with 'Job' being the
-        Job.py response from the server given upon job submission.
+        which has the format of { 'job[id]' : 'job' } with 'Job' being the
+        response from the server given upon job submission.
 
         :return:
         """
-        for json in self.gwas_jsons:
-            job = self.agave.jobs.submit(json)
+        for JSON in self.gwas_jsons:
+            print "Submitting: {}".format(json.dumps(JSON, indent=4, separators=(',', ': ')))
+            job = self.agave.jobs.submit(body=JSON)
             self.running_jobs[job['id']] = job
+            print "Submitted: {}".format(json.dumps(job, indent=4, separators=(',', ': ')))
 
     def poll_jobs(self, job_dict):
         """Polls all running jobs for status until completion.
@@ -266,8 +294,6 @@ class Pipeline:
         jobs are removed and added to the finished_gwas dictionary for easy
         tracking and handling for running through Winnow.
         """
-        #TODO look at notifications instead?
-        #TODO keep data on the datastore - no downloading
         # Instead of polling jobs, check if a directory has been created in the archive
         sleep_time = 60
         finished_jobs = {}
@@ -390,9 +416,11 @@ class Pipeline:
         # QxPak single output file - qxpak.out.
         #
         # Gemma ???
-        for json in winnow_jsons:
-            winnow_submission = self.agave.jobs.submit(body=json)
+        for JSON in winnow_jsons:
+            print "Submitting: {}".format(JSON)
+            winnow_submission = self.agave.jobs.submit(body=JSON)
             self.running_jobs[winnow_submission['id']] = winnow_submission
+            print "Submitted: {}".format(JSON)
 
 
 if __name__ == '__main__':
