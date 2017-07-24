@@ -1,0 +1,11 @@
+name: winnow-app
+title: winnow-app
+account: dhbrand
+server: shinyapps.io
+appId: 191159
+bundleId: 876730
+url: https://dhbrand.shinyapps.io/winnow-app/
+when: 1498053014.66517
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: app1.R|getVar.R
