@@ -281,11 +281,20 @@ class Pipeline:
 
         :return:
         """
+        # TODO delete print statement
+        print "Beginning submission...\n"
+
         for JSON in self.gwas_jsons:
             print "Submitting: {}".format(json.dumps(JSON, indent=4, separators=(',', ': ')))
             job = self.agave.jobs.submit(body=JSON)
             self.running_jobs[job['id']] = job
             print "Submitted: {}".format(job['id'])
+
+        # TODO delete print statements
+        for jb in self.running_jobs.keys():
+            print "{}\t\t{}".format(jb, self.running_jobs[jb])
+
+        print "\nSubmission finished\n\n"
 
     def poll_jobs(self, job_dict):
         """Polls all running jobs for status until completion.
@@ -299,25 +308,33 @@ class Pipeline:
         finished_jobs = {}
 
         # Iterating through all JobIDs and polling until there are no more jobs
-        while not job_dict.keys():
+        while job_dict.keys():
+            print "Begin polling... {} remaining.".format(len(job_dict.keys()))
+
             for job_id in job_dict.keys():
-                job_status = self.agave.jobs.getStatus(job_id)
+                job_status = self.agave.jobs.getStatus(jobId=job_id)
 
                 # If the curernt given job is finished, download output and
                 # remove it from the running queue. The finished job and its
                 # output list is added to the finished_gwas dictionary.
                 # TODO Check for failed jobs / etc.
                 if (job_status['status'] == "FINISHED"):
-                    # TODO use archive instead of downloading
-                    # agave://data.iplantcollaborative.org/<user-home>/archive/jobs/job-<jobID>
+                    print "{} has finished.".format(job_id)
                     finished_jobs[job_id] = job_dict[job_id]
                     del job_dict[job_id]
+
+                elif (job_status['status'] == "FAILED"):
+                    print "{} has FAILED. Removing...".format(job_id)
+                    del job_dict[job_id]
+
                 else:
-                    print "Job " + job_id + " is unfinished. Currently " + job_status['status'] + "."
+                    print "{} is unfinished. Currently {}.".format(job_id, job_status['status'])
 
             # Sleep before repolling Agave. Max sleep time is 1 hour.
             time.sleep(sleep_time)
-            sleep_time *= 2 if sleep_time <= 3600 else sleep_time
+            # sleep_time *= 1.25 if sleep_time <= 3600 else sleep_time
+            print("Jobs finished:  {}".format(finished_jobs.keys()))
+            print "Jobs remaining: {}\n".format(job_dict.keys())
 
         return finished_jobs
 
@@ -328,7 +345,7 @@ class Pipeline:
         :return:
         """
         out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.log', '.model',
-                          '.param']
+                          '.param', '.R']
         job_output_dict = {}
 
         # Iterates thorugh all Job-IDs and collects the output files for each

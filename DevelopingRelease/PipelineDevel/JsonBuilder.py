@@ -135,7 +135,7 @@ def puma_json(data_name, input_dict):
     json_text = {
         "name": "puma_{}".format(data_name),
         "appId": "Puma-1.0u1",
-        "requestedTime": "01:00:00",
+        "requestedTime": "00:05:00",
         "batchQueue": "serial",
         "archive": True,
         "inputs": input_dict,
