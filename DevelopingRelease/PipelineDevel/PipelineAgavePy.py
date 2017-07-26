@@ -69,8 +69,8 @@ class Pipeline:
 
         print "Beginning Agave init."
         self.agave_initialization()
-        self.cyverse_test()
-        # self.validate()
+        # self.cyverse_test()
+        self.validate()
 
     def agave_initialization(self):
         """Initializes Agave client via AgavePy for executing desired jobs on Stampede.
@@ -128,12 +128,12 @@ class Pipeline:
         file_list = [f for f in self.agave.files.list(
             systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
         for file in file_list:
-            print "{}:\t{}\n".format(file['name'], file['path'])
+            print "agave://{}{}\n".format(file['system'], file['path'])
 
-        print "\n\nApps:"
-        apps_list = self.agave.apps.list()
-        for app in apps_list:
-            print "{}:\n".format(app['id'])
+        # print "\n\nApps:"
+        # apps_list = self.agave.apps.list()
+        # for app in apps_list:
+        #     print "{}:\n".format(app['id'])
 
         print self.agave.apps.get(appId='Puma-1.0u1')
 
@@ -220,33 +220,33 @@ class Pipeline:
         if self.input_format == 'p':
             for file in file_list:
                 if ".ote" in file.name:
-                    self.known_truth = file['_links']['self']['href']
+                    self.known_truth = "agave://{}{}".format(file['system'], file['path'])
                 elif ".ped" in file.name:
-                    self.inputs['inputPED'] = file['_links']['self']['href']
+                    self.inputs['inputPED'] = "agave://{}{}".format(file['system'], file['path'])
                 elif ".map" in file.name:
-                    self.inputs['inputMAP'] = file['_links']['self']['href']
+                    self.inputs['inputMAP'] = "agave://{}{}".format(file['system'], file['path'])
 
         # If the input data was declared as BIM/BED/FAM
         elif self.input_format == 'b':
             for file in file_list:
                 if ".ote" in file.name:
-                    self.known_truth = file['_links']['self']['href']
+                    self.known_truth = "agave://{}{}".format(file['system'], file['path'])
                 elif '.bed' in file.name:
-                    self.inputs['inputBED'] = file['_links']['self']['href']
+                    self.inputs['inputBED'] = "agave://{}{}".format(file['system'], file['path'])
                 elif '.bim' in file.name:
-                    self.inputs['inputBIM'] = file['_links']['self']['href']
+                    self.inputs['inputBIM'] = "agave://{}{}".format(file['system'], file['path'])
                 elif '.fam' in file.name:
-                    self.inputs['inputFAM'] = file['_links']['self']['href']
+                    self.inputs['inputFAM'] = "agave://{}{}".format(file['system'], file['path'])
 
         # If the input data was declared as TPED/TMAP
         else:
             for file in file_list:
                 if ".ote" in file.name:
-                    self.known_truth = file['_links']['self']['href']
+                    self.known_truth = "agave://{}{}".format(file['system'], file['path'])
                 elif ".tped" in file.name:
-                    self.inputs['inputTPED'] = file['_links']['self']['href']
+                    self.inputs['tped'] = "agave://{}{}".format(file['system'], file['path'])
                 elif ".tfam" in file.name:
-                    self.inputs['inputTFAM'] = file['_links']['self']['href']
+                    self.inputs['tfam'] = "agave://{}{}".format(file['system'], file['path'])
 
     def build_jsons(self):
         """Builds JSONs from the parsed input information.
@@ -285,7 +285,7 @@ class Pipeline:
             print "Submitting: {}".format(json.dumps(JSON, indent=4, separators=(',', ': ')))
             job = self.agave.jobs.submit(body=JSON)
             self.running_jobs[job['id']] = job
-            print "Submitted: {}".format(json.dumps(job, indent=4, separators=(',', ': ')))
+            print "Submitted: {}".format(job['id'])
 
     def poll_jobs(self, job_dict):
         """Polls all running jobs for status until completion.

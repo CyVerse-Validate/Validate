@@ -133,8 +133,9 @@ def gemma_json(data_name, input_dict):
 
 def puma_json(data_name, input_dict):
     json_text = {
-        "jobName": "puma_{}".format(data_name),
-        "softwareName": "Puma-1.0u1",
+        "name": "puma_{}".format(data_name),
+        "appId": "Puma-1.0u1",
+        "requestedTime": "01:00:00",
         "batchQueue": "serial",
         "archive": True,
         "inputs": input_dict,
@@ -142,14 +143,7 @@ def puma_json(data_name, input_dict):
             "regression": "LINEAR",
             "penalty":"LASSO",
             "name":data_name
-        },
-        "notifications": [
-            {
-                "url": "http://requestb.in/p9fm7ap9?job_id=${JOB_ID}&status=${JOB_STATUS}",
-                "event": "*",
-                "persistent": True
-            }
-        ]
+        }
     }
 
     return json_text
