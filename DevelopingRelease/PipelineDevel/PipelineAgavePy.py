@@ -1,9 +1,14 @@
 import json
 import agavepy.agave as a
 import argparse
+
+import datetime
 import requests
 from getpass import getpass
 import time
+
+from dateutil.tz import tzoffset
+
 import JsonBuilder
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from time import gmtime, strftime
@@ -47,13 +52,16 @@ class Pipeline:
 
         # self.user_home = Agave.filesApi. TODO get user home directory
         self.agave = None
+        self.agave_token = None
         self.access_token = None
         self.run_date = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
 
         self.username = ""
         self.password = ""
+        self.iplant = 'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org/'
         self.home_dir = ""
         self.home_full = ""
+        self.validate_dir = ""
 
         self.data_folder = ""       # User defined folder from the Datastore
         self.input_format = ""      # Type of inputs the user is providing
@@ -101,17 +109,69 @@ class Pipeline:
             self.client = self.agave.clients.create(body={'clientName': 'pipelineClient'})
 
         # Grabbing token and links from the created Agave client
-        self.access_token = self.agave.token
+        self.agave_token = self.agave.token
+        self.access_token = self.agave_token.token_info['access_token']
         self.home_dir = '/{}'.format(self.username)
-        self.home_full = 'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org/' + self.home_dir
+        self.home_full = self.iplant + self.home_dir
+        self.validate_dir = 'Validate/{}/'.format(self.run_date)
 
+    # TODO delete test method
     def cyverse_test(self):
         """
 
         :return:
         """
+        job_test = {}
+        job_test['530158803913141785-242-ac113-0001-007'] = {
+            u'status': u'PENDING', u'inputs': {u'tped': [
+            u'agave://data.iplantcollaborative.org/mjs3607/PumaTest/X_test.tped'],
+                                            u'tfam': [
+                                                u'agave://data.iplantcollaborative.org/mjs3607/PumaTest/X_test.tfam']},
+         u'localId': None, u'memoryPerNode': 4.0,
+         u'archiveSystem': u'data.iplantcollaborative.org',
+         u'processorsPerNode': 1,
+         u'submitTime': datetime.datetime(2017, 7, 26, 14, 16, 52,
+                                          tzinfo=tzoffset(None, -18000)),
+         u'executionSystem': u'stampede.tacc.utexas.edu', u'startTime': None,
+         u'appId': u'Puma-1.0u1', u'owner': u'mjs3607',
+         u'id': u'530158803913141785-242ac113-0001-007', u'retries': 0,
+         u'name': u'PumaTest',
+         u'parameters': {u'penalty': u'LASSO', u'name': u'PumaTest',
+                         u'regression': u'LINEAR'}, u'batchQueue': u'serial',
+         u'nodeCount': 1, u'lastModified': u'2017-07-26T14:16:52.000-05:00',
+         u'created': u'2017-07-26T14:16:52.000-05:00',
+         u'archivePath': u'mjs3607/archive/jobs/job-530158803913141785-242ac113-0001-007',
+         u'archive': True, u'outputPath': None, u'maxRunTime': u'00:05:00',
+         u'_links': {u'notifications': {
+             u'href': u'https://agave.iplantc.org/notifications/v2/?associatedUuid=530158803913141785-242ac113-0001-007'},
+                     u'archiveSystem': {
+                         u'href': u'https://agave.iplantc.org/systems/v2/data.iplantcollaborative.org'},
+                     u'notification': [], u'self': {
+                 u'href': u'https://agave.iplantc.org/jobs/v2/530158803913141785-242ac113-0001-007'},
+                     u'metadata': {
+                         u'href': u'https://agave.iplantc.org/meta/v2/data/?q=%7B%22associationIds%22%3A%22530158803913141785-242ac113-0001-007%22%7D'},
+                     u'archiveData': {
+                         u'href': u'https://agave.iplantc.org/jobs/v2/530158803913141785-242ac113-0001-007/outputs/listings'},
+                     u'executionSystem': {
+                         u'href': u'https://agave.iplantc.org/systems/v2/stampede.tacc.utexas.edu'},
+                     u'owner': {
+                         u'href': u'https://agave.iplantc.org/profiles/v2/mjs3607'},
+                     u'history': {
+                         u'href': u'https://agave.iplantc.org/jobs/v2/530158803913141785-242ac113-0001-007/history'},
+                     u'app': {
+                         u'href': u'https://agave.iplantc.org/apps/v2/Puma-1.0u1'},
+                     u'permissions': {
+                         u'href': u'https://agave.iplantc.org/jobs/v2/530158803913141785-242ac113-0001-007/pems'}},
+         u'endTime': None}
+
+        print "Access Token:    {}".format(self.agave_token.token_info['access_token'])
+        print "API Key:     {}".format(self.agave_token.api_key)
+        print "API Secret:  {}\n".format(self.agave_token.api_secret)
+        print "Home dir:    {}".format(self.home_dir)
+        print "Home full:   {}".format(self.home_full)
         print "Data folder: {}".format(self.data_folder)
         print "Full path:   {}".format(self.home_full + self.data_folder)
+        print "Validate:    {}".format(self.validate_dir)
         print "\n\n\n"
 
         # systems = self.agave.systems.list()
@@ -122,20 +182,25 @@ class Pipeline:
         print "Systems:"
         system_list = self.agave.systems.list()
         for system in system_list:
-            print "{}\n".format(system['id'])
+            print "{}\n".format(system)
 
         print "\n\nFiles:"
         file_list = [f for f in self.agave.files.list(
             systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
         for file in file_list:
-            print "agave://{}{}\n".format(file['system'], file['path'])
+            print "agave://{}{}".format(file['system'], file['path'])
 
         # print "\n\nApps:"
         # apps_list = self.agave.apps.list()
         # for app in apps_list:
         #     print "{}:\n".format(app['id'])
 
-        print self.agave.apps.get(appId='Puma-1.0u1')
+        remote_file_list = self.agave.files.list(
+            systemId='data.iplantcollaborative.org',
+            filePath=job_test['530158803913141785-242-ac113-0001-007']['archivePath'])
+
+        for f in remote_file_list:
+            print f
 
     def validate(self):
         """Main run method for the Validate Workflow.
@@ -151,7 +216,8 @@ class Pipeline:
         self.gwas_submission()
         self.finished_gwas = self.poll_jobs(self.running_jobs)
         self.make_output_folders(self.parse_archives(self.finished_gwas))
-        # self.finished_winnow = self.poll_jobs(self.running_jobs)
+        self.winnow_submission(self.create_winnow_jsons(self.output_folders))
+        self.finished_winnow = self.poll_jobs(self.running_jobs)
         # TODO Equalise outputs
         # TODO Make Winnow JSONs
         # TODO Submit Winnow
@@ -331,7 +397,9 @@ class Pipeline:
                     print "{} is unfinished. Currently {}.".format(job_id, job_status['status'])
 
             # Sleep before repolling Agave. Max sleep time is 1 hour.
-            time.sleep(sleep_time)
+            if job_dict.keys():
+                time.sleep(sleep_time)
+
             # sleep_time *= 1.25 if sleep_time <= 3600 else sleep_time
             print("Jobs finished:  {}".format(finished_jobs.keys()))
             print "Jobs remaining: {}\n".format(job_dict.keys())
@@ -344,7 +412,7 @@ class Pipeline:
         :param jobid_dict: Dictionary with the Agave job-id as keys.
         :return:
         """
-        out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.log', '.model',
+        out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.model',
                           '.param', '.R']
         job_output_dict = {}
 
@@ -352,11 +420,13 @@ class Pipeline:
         for jobid in jobid_dict.keys():
             job_outputs = []
             remote_file_list = self.agave.files.list(
-                filePath=self.home_dir + "/archive/jobs/job-{}".format(jobid))
+                systemId='data.iplantcollaborative.org',
+                filePath=jobid_dict[jobid]['archivePath'])
 
             for file in remote_file_list:
-                if any(out_extensions) in file['name']:
+                if any(ext in file['name'] for ext in out_extensions):
                     job_outputs.append(file['path'])
+                    print("\tAppending output file {}".format(file['name']))
 
             job_output_dict[jobid] = job_outputs
 
@@ -369,45 +439,41 @@ class Pipeline:
         :param job_outputs: Dictionary of { 'jobid' : list(output_paths) }
         :return:
         """
-        validate_dir = self.home_full + 'Validate/' + self.run_date
         # TODO add timestamp to each validate 'run' OR user-provided name
         self.output_folders = {}
 
-        # file_list = [f.name for f in self.agave.files.list(
-        #     systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
-        #
-        # if "Validate" not in file_list:
-        #     requests.post(storage + self.home_dir, data={"action": "mkdir",
-        #                                                  "path": "Validate"})
+        newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                           filePath='/mjs3607',
+                           body={'action':'mkdir',
+                                       'path':'{}'.format(self.validate_dir)})
+        print newf
 
-        requests.post(validate_dir, data={
-            "action": "mkdir",
-            "path": "GWAS"
-        })
-
-        requests.post(validate_dir, data={
-            "action": "mkdir",
-            "path": "Winnow"
-        })
         # Loops through all finished Job IDs and creates a subdirectory within
         # the 'Validate GWAS Outputs' folder defined above simply named after
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys():
-            requests.post(validate_dir + "GWAS/", data={
-                "action": "mkdir",
-                "path": jobid
-            })
+            newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                           filePath='/mjs3607/{}'.format(self.validate_dir),
+                           body={'action':'mkdir',
+                                       'path':"GWAS/{}".format(jobid)})
+            print newf
 
             # Copying all job outputs from the system archive directory to the
             # newly created subdirectory, leaving the original archive as is.
             for file in job_outputs[jobid]:
-                requests.post(file, data={
-                    "action": "copy",
-                    "path": validate_dir + "/" + jobid
-                })
+                # self.agave.files.copy(systemId="data.iplantcollaborative.org",
+                #                       filePath=file['path'],
+                #                       destination="{}/GWAS/{}".format(self.validate_dir, jobid))
+
+                print "Copying {} to {}/GWAS/{}".format(file, self.validate_dir, jobid)
+                copyf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                           filePath='{}'.format(file),
+                           body={'action':'copy',
+                                       'path':"{}/GWAS/{}".format(self.validate_dir, jobid)})
+                print copyf
 
             # TODO get Validate GWAS Outputs full path
-            self.output_folders[jobid] = validate_dir + "/" + jobid
+            self.output_folders[jobid] = "{}/GWAS/{}".format(self.validate_dir, jobid)
 
     def create_winnow_jsons(self, output_folders):
         # Files are located in /iplant/home/<user-dir>/archive/jobs/job-<jobid>
@@ -438,6 +504,18 @@ class Pipeline:
             winnow_submission = self.agave.jobs.submit(body=JSON)
             self.running_jobs[winnow_submission['id']] = winnow_submission
             print "Submitted: {}".format(JSON)
+
+        for JSON in winnow_jsons:
+            print "Submitting: {}".format(json.dumps(JSON, indent=4, separators=(',', ': ')))
+            job = self.agave.jobs.submit(body=JSON)
+            self.running_jobs[job['id']] = job
+            print "Submitted: {}".format(job['id'])
+
+        # TODO delete print statements
+        for jb in self.running_jobs.keys():
+            print "{}\t\t{}".format(jb, self.running_jobs[jb])
+
+        print "\nSubmission finished\n\n"
 
 
 if __name__ == '__main__':
