@@ -244,6 +244,9 @@ class Pipeline:
                                  "contain all input data as well as the known-truth"
                                  "file for the given data set and be a path"
                                  "relative to the \"/iplant/home\" directory.")
+        parser.add_argument("-pno", "--pheno", type=str,
+                            help="Name (including extension) for the covariate"
+                                 "file for the given dataset.")
         parser.add_argument("-lmm", "--fastlmm", type=bool,
                             help="\"True\" if FaST-LMM is to be run.")
         parser.add_argument("-rdg", "--ridge", type=bool,
@@ -443,7 +446,7 @@ class Pipeline:
         self.output_folders = {}
 
         newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
-                           filePath='/mjs3607',
+                           filePath='{}'.format(self.home_dir),
                            body={'action':'mkdir',
                                        'path':'{}'.format(self.validate_dir)})
         print newf
@@ -453,7 +456,7 @@ class Pipeline:
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys():
             newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
-                           filePath='/mjs3607/{}'.format(self.validate_dir),
+                           filePath='{}/{}'.format(self.home_dir, self.validate_dir),
                            body={'action':'mkdir',
                                        'path':"GWAS/{}".format(jobid)})
             print newf
@@ -469,11 +472,11 @@ class Pipeline:
                 copyf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
                            filePath='{}'.format(file),
                            body={'action':'copy',
-                                       'path':"{}/GWAS/{}".format(self.validate_dir, jobid)})
+                                       'path':"{}/{}/GWAS/{}".format(self.home_dir, self.validate_dir, jobid)})
                 print copyf
 
             # TODO get Validate GWAS Outputs full path
-            self.output_folders[jobid] = "{}/GWAS/{}".format(self.validate_dir, jobid)
+            self.output_folders[jobid] = "{}/{}/GWAS/{}".format(self.home_dir, self.validate_dir, jobid)
 
     def create_winnow_jsons(self, output_folders):
         # Files are located in /iplant/home/<user-dir>/archive/jobs/job-<jobid>
