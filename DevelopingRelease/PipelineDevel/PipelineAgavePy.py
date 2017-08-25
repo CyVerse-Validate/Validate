@@ -58,7 +58,7 @@ class Pipeline:
 
         self.username = ""
         self.password = ""
-        self.iplant = 'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org/'
+        self.iplant = 'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org'
         self.home_dir = ""
         self.home_full = ""
         self.validate_dir = ""
@@ -113,7 +113,7 @@ class Pipeline:
         self.access_token = self.agave_token.token_info['access_token']
         self.home_dir = '/{}'.format(self.username)
         self.home_full = self.iplant + self.home_dir
-        self.validate_dir = 'Validate/{}/'.format(self.run_date)
+        self.validate_dir = '/Validate/{}'.format(self.run_date)
 
     # TODO delete test method
     def cyverse_test(self):
@@ -172,6 +172,7 @@ class Pipeline:
         print "Data folder: {}".format(self.data_folder)
         print "Full path:   {}".format(self.home_full + self.data_folder)
         print "Validate:    {}".format(self.validate_dir)
+        print "ValidateF:   {}".format(self.home_full + self.validate_dir)
         print "\n\n\n"
 
         # systems = self.agave.systems.list()
@@ -456,7 +457,7 @@ class Pipeline:
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys():
             newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
-                           filePath='{}/{}'.format(self.home_dir, self.validate_dir),
+                           filePath='{}{}'.format(self.home_dir, self.validate_dir),
                            body={'action':'mkdir',
                                        'path':"GWAS/{}".format(jobid)})
             print newf
@@ -464,27 +465,38 @@ class Pipeline:
             # Copying all job outputs from the system archive directory to the
             # newly created subdirectory, leaving the original archive as is.
             for file in job_outputs[jobid]:
-                # self.agave.files.copy(systemId="data.iplantcollaborative.org",
-                #                       filePath=file['path'],
-                #                       destination="{}/GWAS/{}".format(self.validate_dir, jobid))
-
                 print "Copying {} to {}/GWAS/{}".format(file, self.validate_dir, jobid)
                 copyf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
                            filePath='{}'.format(file),
                            body={'action':'copy',
-                                       'path':"{}/{}/GWAS/{}".format(self.home_dir, self.validate_dir, jobid)})
+                                       'path':"{}{}/GWAS/{}".format(
+                                           self.home_dir, self.validate_dir, jobid)})
                 print copyf
 
             # TODO get Validate GWAS Outputs full path
-            self.output_folders[jobid] = "{}/{}/GWAS/{}".format(self.home_dir, self.validate_dir, jobid)
+            self.output_folders[jobid] = "agave://{}{}/GWAS/{}".format(
+                self.home_dir, self.validate_dir, jobid)
+
+            # Checking files in the Validate directory after copying
+            print "Files in {}/GWAS/ after copy:".format(self.home_dir + self.validate_dir)
+            validate_files = [f for f in self.agave.files.list(
+                systemId='data.iplantcollaborative.org',
+                filePath="{}/GWAS/{}".format(self.home_dir + self.validate_dir, jobid))]
+
+            for file in validate_files:
+                print file
 
     def create_winnow_jsons(self, output_folders):
         # Files are located in /iplant/home/<user-dir>/archive/jobs/job-<jobid>
         winnow_jsons = []
 
         for jobid in output_folders.keys():
-            winnow_jsons += JsonBuilder.make_winnow_json(
+            winnow_js = JsonBuilder.make_winnow_json(
                 jobid, output_folders[jobid], self.known_truth)
+
+            print json.dumps(winnow_js, indent=4, separators=(',', ': '))
+
+            winnow_jsons.append(winnow_js)
 
         return winnow_jsons
 
@@ -502,11 +514,11 @@ class Pipeline:
         # QxPak single output file - qxpak.out.
         #
         # Gemma ???
-        for JSON in winnow_jsons:
-            print "Submitting: {}".format(JSON)
-            winnow_submission = self.agave.jobs.submit(body=JSON)
-            self.running_jobs[winnow_submission['id']] = winnow_submission
-            print "Submitted: {}".format(JSON)
+        # for JSON in winnow_jsons:
+        #     print "Submitting: {}".format(JSON)
+        #     winnow_submission = self.agave.jobs.submit(body=JSON)
+        #     self.running_jobs[winnow_submission['id']] = winnow_submission
+        #     print "Submitted: {}".format(JSON)
 
         for JSON in winnow_jsons:
             print "Submitting: {}".format(json.dumps(JSON, indent=4, separators=(',', ': ')))
