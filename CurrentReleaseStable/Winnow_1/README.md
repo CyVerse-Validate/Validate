@@ -1,11 +1,11 @@
-#Winnow: Known-Truth Testing for Genome Wide Association Studies Tools (version 0.9)
+# Winnow: Known-Truth Testing for Genome Wide Association Studies Tools (version 0.9)
 
-##Note:
+## Note:
 This README is for the full documentation related to the latest version of the Winnow program. 
 If you just want to dive right in and spare yourself some reading, **[head over to the Quickstart guide.](https://github.com/UNCW-iPlant/Quickstart-guide/blob/master/docs/Winnow.md)** 
 If you want a more thorough explanation of Winnow's options and inner workings, read on.
 
-##Documentation:
+## Documentation:
 The bread-and-butter of the Validate Workflow, Winnow (formerly the eponymous Validate), is a Python-compatible known truth testing tool for genome wide association studies (GWAS). Quite simply, Winnow is a tool that evaluates other tools. 
 Winnow requires output from a GWAS tool after analyzing a data set. Given the "known truth" of said data set, Winnow outputs a series of fit statistics to determine 
 the validity of the GWAS tool and whether or not it was truly useful in analyzing the data. In particular, Winnow is useful for ascertaining which analysis tool may be best for a given data set.
@@ -15,7 +15,7 @@ Before we get into the command-line arguments necessary for Winnow, it may be be
 Please note that the actual file extension does not matter so much as the layout of the file itself. For instance, though it is preferable that the known-truth file have a .txt extension,
 it is not necessary as long as the file is layed out in the following format:
 
-###Known-Truth File
+### Known-Truth File
 
 The known-truth file from your analyses may be arranged in either two rows or two columns. Also, there are two acceptable formats for the known-truth file:
   * OTE: Only Truth and Effect. As the name implies, this format only lists those SNPs which are known to have a significant effect, along with their corresponding effect values (in this case, the SNP weight or effect size column would be mandatory in the GWAS output folder)
@@ -26,7 +26,7 @@ Here is an example of an OTE known-truth file:
 
 ![ExampleKT](https://pods.iplantcollaborative.org/wiki/download/attachments/14582582/Screen%20Shot%202015-02-05%20at%201.29.03%20PM.png?version=1&modificationDate=1423340032000&api=v2)
 
-###GWAS Analysis Files
+### GWAS Analysis Files
 
 The input files for Winnow must be output from GWAS analysis tools to obtain an accurate reading; however, because many different GWAS tools exist, the format(s) must be standardized for practical use.
 * Data must be arranged into columns, not rows
@@ -43,7 +43,7 @@ Here is an example of a GWAS results file (from PLINK):
 As with the other programs, Winnow is a command-line ready Python program, and like the other steps in the workflow, command-line arguments are required for Winnow to work properly.
 In particular, the full list of command-line arguments is as follows:
 
-###Required Arguments
+### Required Arguments
 
 * **-F** or **--Folder**: A string representing the name of the folder where all GWAS analysis outputs are stored. 
 Note that this assumes all analyses you wish to run through Winnow already have been aggregated into a folder. 
@@ -64,7 +64,7 @@ Quite simply, this column shows the p-values indicating significant SNPs.
 The "OTE" option stands for "Only Truth and Effect," meaning that only those SNPs deemed significant, along with their effect sizes, are listed.
 The "FGS" option stands for "Full Genome Set," meaning that all SNPs along with their effect sizes are listed, regardless of significance.
 
-###Optional Arguments
+### Optional Arguments
 
 * **-v** or **--verbose**: Requires no argument. Command-line flag that triggers verbose mode which explicity states each option before running.
 Set to False by default (i.e. not verbose mode).
@@ -110,7 +110,7 @@ An example of running Winnow from the command line with these options would look
 
 `python winnow.py --verbose --Folder Example_Data/OutputPlink --Class Example_Data/kt.ote --Snp SNP --Score P --beta BETA --filename ~/Desktop/MyResults --threshold 0.01 --seper whitespace --kttype OTE --kttypeseper whitespace --pvaladjust fdr_bh --savep`
 
-###The Output File
+### The Output File
 
 The output file for Winnow, specified with whatever name you chose, contains 16 columns, and the number of rows depends on how many results files were placed in the aggregated folder. 
 Each column indicates a particular fit statistic with each row indicating one GWAS result file. 
