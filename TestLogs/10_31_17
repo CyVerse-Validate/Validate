@@ -1,0 +1,92 @@
+(Validate1.2) login1.stampede2(23)$ python Validate/DevelopingRelease/PipelineDevel/PipelineAgavePy.py -u dhbrand --password ********** -i \tp -f /dhbrand/DongWang/FaST-LMM -lmm True
+Beginning Agave init.
+Pipeline client extant.
+{'archive': True, 'inputs': {}, 'name': 'FaST-LMM_FaST-LMM', 'parameters': {'output': 'full_results'}, 'appId': 'FaST-LMM-hpc-2.07u1'}
+Beginning submission...
+
+Submitting: {
+    "archive": true,
+    "inputs": {},
+    "name": "FaST-LMM_FaST-LMM",
+    "parameters": {
+        "output": "full_results"
+    },
+    "appId": "FaST-LMM-hpc-2.07u1"
+}
+Submitted: 434301048850223591-242ac114-0001-007
+434301048850223591-242ac114-0001-007		{u'status': u'PENDING', u'inputs': {}, u'localId': None, u'memoryPerNode': 1.0, u'archiveSystem': u'data.iplantcollaborative.org', u'processorsPerNode': 1, u'submitTime': datetime.datetime(2017, 10, 31, 9, 59, 2, tzinfo=tzoffset(None, -18000)), u'executionSystem': u'stampede.tacc.utexas.edu', u'startTime': None, u'appId': u'FaST-LMM-hpc-2.07u1', u'owner': u'dhbrand', u'id': u'434301048850223591-242ac114-0001-007', u'retries': 0, u'name': u'FaST-LMM_FaST-LMM', u'parameters': {}, u'batchQueue': u'normal', u'nodeCount': 1, u'lastModified': u'2017-10-31T09:59:02.000-05:00', u'created': u'2017-10-31T09:59:02.000-05:00', u'archivePath': u'dhbrand/archive/jobs/job-434301048850223591-242ac114-0001-007', u'archive': True, u'outputPath': None, u'maxRunTime': u'48:00:00', u'_links': {u'notifications': {u'href': u'https://agave.iplantc.org/notifications/v2/?associatedUuid=434301048850223591-242ac114-0001-007'}, u'archiveSystem': {u'href': u'https://agave.iplantc.org/systems/v2/data.iplantcollaborative.org'}, u'notification': [], u'self': {u'href': u'https://agave.iplantc.org/jobs/v2/434301048850223591-242ac114-0001-007'}, u'metadata': {u'href': u'https://agave.iplantc.org/meta/v2/data/?q=%7B%22associationIds%22%3A%22434301048850223591-242ac114-0001-007%22%7D'}, u'archiveData': {u'href': u'https://agave.iplantc.org/jobs/v2/434301048850223591-242ac114-0001-007/outputs/listings'}, u'executionSystem': {u'href': u'https://agave.iplantc.org/systems/v2/stampede.tacc.utexas.edu'}, u'owner': {u'href': u'https://agave.iplantc.org/profiles/v2/dhbrand'}, u'history': {u'href': u'https://agave.iplantc.org/jobs/v2/434301048850223591-242ac114-0001-007/history'}, u'app': {u'href': u'https://agave.iplantc.org/apps/v2/FaST-LMM-hpc-2.07u1'}, u'permissions': {u'href': u'https://agave.iplantc.org/jobs/v2/434301048850223591-242ac114-0001-007/pems'}}, u'endTime': None}
+
+Submission finished
+
+
+Begin polling... 1 remaining.
+434301048850223591-242ac114-0001-007 is unfinished. Currently PENDING.
+Jobs finished:  []
+Jobs remaining: [u'434301048850223591-242ac114-0001-007']
+
+Begin polling... 1 remaining.
+434301048850223591-242ac114-0001-007 is unfinished. Currently ARCHIVING.
+Jobs finished:  []
+Jobs remaining: [u'434301048850223591-242ac114-0001-007']
+
+Begin polling... 1 remaining.
+434301048850223591-242ac114-0001-007 has finished.
+Jobs finished:  [u'434301048850223591-242ac114-0001-007']
+Jobs remaining: []
+
+{u'status': u'TRANSFORMING_COMPLETED', u'name': u'2017-10-31_14:58:43', u'lastModified': u'2017-10-31T10:01:16.439-05:00', u'uuid': u'6339838131177263591-242ac113-0001-002', u'nativeFormat': u'dir', u'source': None, u'systemId': u'data.iplantcollaborative.org', u'_links': {u'profile': {u'href': u'https://agave.iplantc.org/profiles/v2/dhbrand'}, u'self': {u'href': u'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org//dhbrand/Validate/2017-10-31_14:58:43'}, u'system': {u'href': u'https://agave.iplantc.org/systems/v2/data.iplantcollaborative.org'}, u'history': {u'href': u'https://agave.iplantc.org/files/v2/history/system/data.iplantcollaborative.org//dhbrand/Validate/2017-10-31_14:58:43'}}, u'owner': u'dhbrand', u'path': u'dhbrand/Validate/2017-10-31_14:58:43', u'internalUsername': None}
+{u'status': u'TRANSFORMING_COMPLETED', u'name': u'434301048850223591-242ac114-0001-007', u'lastModified': u'2017-10-31T10:01:27.044-05:00', u'uuid': u'6796693802452783591-242ac113-0001-002', u'nativeFormat': u'dir', u'source': None, u'systemId': u'data.iplantcollaborative.org', u'_links': {u'profile': {u'href': u'https://agave.iplantc.org/profiles/v2/dhbrand'}, u'self': {u'href': u'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org//dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007'}, u'system': {u'href': u'https://agave.iplantc.org/systems/v2/data.iplantcollaborative.org'}, u'history': {u'href': u'https://agave.iplantc.org/files/v2/history/system/data.iplantcollaborative.org//dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007'}}, u'owner': u'dhbrand', u'path': u'dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007', u'internalUsername': None}
+Files in /dhbrand/Validate/2017-10-31_14:58:43/GWAS/ after copy:
+{u'mimeType': u'text/directory', u'name': u'.', u'format': u'folder', u'lastModified': datetime.datetime(2017, 10, 31, 10, 1, 24, tzinfo=tzoffset(None, -18000)), u'system': u'data.iplantcollaborative.org', u'length': 0, u'_links': {u'self': {u'href': u'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org//dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007'}, u'history': {u'href': u'https://agave.iplantc.org/files/v2/history/system/data.iplantcollaborative.org//dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007'}, u'system': {u'href': u'https://agave.iplantc.org/systems/v2/data.iplantcollaborative.org'}, u'metadata': {u'href': u'https://agave.iplantc.org/meta/v2/data?q=%7B%22associationIds%22%3A%226796693802452783591-242ac113-0001-002%22%7D'}}, u'path': u'/dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007', u'type': u'dir', u'permissions': u'READ'}
+{
+    "inputs": {
+        "Folder": "agave:///dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007",
+        "Class": ""
+    },
+    "name": "Winnow_434301048850223591-242ac114-0001-007",
+    "parameters": {
+        "kttype": "OTE",
+        "seper": "whitespace",
+        "Filename": "TestResults",
+        "beta": "BETA",
+        "Score": "P",
+        "SNP": "SNP",
+        "threshold": "0.01"
+    },
+    "requestedTime": "02:00:00",
+    "appId": "Winnow-1.0.1",
+    "archive": "true"
+}
+Submitting: {
+    "inputs": {
+        "Folder": "agave:///dhbrand/Validate/2017-10-31_14:58:43/GWAS/434301048850223591-242ac114-0001-007",
+        "Class": ""
+    },
+    "name": "Winnow_434301048850223591-242ac114-0001-007",
+    "parameters": {
+        "kttype": "OTE",
+        "seper": "whitespace",
+        "Filename": "TestResults",
+        "beta": "BETA",
+        "Score": "P",
+        "SNP": "SNP",
+        "threshold": "0.01"
+    },
+    "requestedTime": "02:00:00",
+    "appId": "Winnow-1.0.1",
+    "archive": "true"
+}
+Traceback (most recent call last):
+  File "Validate/DevelopingRelease/PipelineDevel/PipelineAgavePy.py", line 537, in <module>
+    Pipeline()
+  File "Validate/DevelopingRelease/PipelineDevel/PipelineAgavePy.py", line 81, in __init__
+    self.validate()
+  File "Validate/DevelopingRelease/PipelineDevel/PipelineAgavePy.py", line 220, in validate
+    self.winnow_submission(self.create_winnow_jsons(self.output_folders))
+  File "Validate/DevelopingRelease/PipelineDevel/PipelineAgavePy.py", line 525, in winnow_submission
+    job = self.agave.jobs.submit(body=JSON)
+  File "/work/04734/dhbrand/stampede2/Validate1.2/lib/python2.7/site-packages/agavepy/agave.py", line 474, in __call__
+    resp = with_refresh(self.client, operation)
+  File "/work/04734/dhbrand/stampede2/Validate1.2/lib/python2.7/site-packages/agavepy/agave.py", line 90, in with_refresh
+    raise exc
+requests.exceptions.HTTPError: 400 Client Error: Bad Request
