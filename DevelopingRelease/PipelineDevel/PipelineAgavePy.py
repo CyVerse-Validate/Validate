@@ -211,18 +211,21 @@ class Pipeline:
         # TODO add option for the user to upload their own data from their local machines
         # TODO add simulation option
         self.parse_inputs()
-        self.build_jsons()
 
-        # TODO build gwas files from the given folder.
-        self.gwas_submission()
-        self.finished_gwas = self.poll_jobs(self.running_jobs)
-        self.make_output_folders(self.parse_archives(self.finished_gwas))
-        self.winnow_submission(self.create_winnow_jsons(self.output_folders))
-        self.finished_winnow = self.poll_jobs(self.running_jobs)
+        if self.gwas:
+            self.build_jsons()
+
+            # TODO build gwas files from the given folder.
+            self.gwas_submission()
+            self.finished_gwas = self.poll_jobs(self.running_jobs)
+            self.make_output_folders(self.parse_archives(self.finished_gwas))
+
+        if self.winnow:
+            self.winnow_submission(self.create_winnow_jsons(self.output_folders))
+            self.finished_winnow = self.poll_jobs(self.running_jobs)
+            self.make_winnow_folders(self.parse_archives(self.finished_winnow,
+                                                         winnow=True))
         # TODO Equalise outputs
-        # TODO Make Winnow JSONs
-        # TODO Submit Winnow
-        # TODO Retrieve Winnow outputs
 
     def checkArgs(self):
         """Checks all command-line arguments provided in the command-line call.
@@ -248,25 +251,36 @@ class Pipeline:
         parser.add_argument("-pno", "--pheno", type=str,
                             help="Name (including extension) for the covariate"
                                  "file for the given dataset.")
-        parser.add_argument("-lmm", "--fastlmm", type=bool,
-                            help="\"True\" if FaST-LMM is to be run.")
-        parser.add_argument("-rdg", "--ridge", type=bool,
-                            help="\"True\" if Ridge is to be run.")
-        parser.add_argument("-bay", "--bayes", type=bool,
-                            help="\"True\" if BayesR is to be run.")
-        parser.add_argument("-plk", "--plink", type=bool,
-                            help="\"True\" if PLINK is to be run.")
-        parser.add_argument("-qxp", "--qxpak", type=bool,
-                            help="\"True\" if QxPak is to be run.")
-        parser.add_argument("-gma", "--gemma", type=bool,
-                            help="\"True\" if Gemma is to be run.")
-        parser.add_argument("-pma", "--puma", type=bool,
-                            help="\"True\" if Puma is to be run.")
+        parser.add_argument("-lmm", "--fastlmm", action="store_true",
+                            help="Apply this flag if FaST-LMM is to be run.")
+        parser.add_argument("-rdg", "--ridge", action="store_true",
+                            help="Apply this flag if Ridge is to be run.")
+        parser.add_argument("-bay", "--bayes", action="store_true",
+                            help="Apply this flag if BayesR is to be run.")
+        parser.add_argument("-plk", "--plink", action="store_true",
+                            help="Apply this flag if PLINK is to be run.")
+        parser.add_argument("-qxp", "--qxpak", action="store_true",
+                            help="Apply this flag if QxPak is to be run.")
+        parser.add_argument("-gma", "--gemma", action="store_true",
+                            help="Apply this flag if Gemma is to be run.")
+        parser.add_argument("-pma", "--puma", action="store_true",
+                            help="Apply this flag if Puma is to be run.")
+        parser.add_argument("--no_gwas", action="store_false",
+                            help="Apply this flag if gwas is not to be run. In"
+                                 " this scenario, the input folder will be"
+                                 " taken as the Winnow folder.")
+        parser.add_argument("--no_winnow", action="store_false",
+                            help="Apply this flag if Winnow is not to be run. "
+                                 "In this scenario, GWAS output data will be "
+                                 "moved to the Validate directory and the "
+                                 "process will complete.")
 
         # TODO get parameters for each GWAS somehow - potentially JSON?
         # TODO Add option for user to pass in their own JSONs instead of a folder
 
         args = parser.parse_args()
+        self.gwas = args.no_gwas
+        self.winnow = args.no_winnow
         self.username = args.username
         self.password = args.password
         self.input_format = args.InFormat
@@ -410,14 +424,17 @@ class Pipeline:
 
         return finished_jobs
 
-    def parse_archives(self, jobid_dict):
+    def parse_archives(self, jobid_dict, winnow=False):
         """Parses job output archives on the Discovery Environment via Agave.
 
         :param jobid_dict: Dictionary with the Agave job-id as keys.
         :return:
         """
-        out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.model',
-                          '.param', '.R']
+        if not winnow:
+            out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.model',
+                              '.param', '.R']
+        else:
+            out_extensions = ['.txt']
         job_output_dict = {}
 
         # Iterates thorugh all Job-IDs and collects the output files for each
