@@ -87,7 +87,7 @@ class Pipeline:
         """
 
         #TODO encapsulate
-        if len(self.password) == 0:
+        if self.password is None:
             self.password = getpass()
 
         # Establishing connection with Agave using the user's allocation username and password
@@ -531,6 +531,48 @@ class Pipeline:
             print "{}\t\t{}".format(jb, self.running_jobs[jb])
 
         print "\nSubmission finished\n\n"
+
+    def make_winnow_folders(self, job_outputs):
+        """Makes folders of all outputs for each finished GWAS job.
+
+        :param job_outputs: Dictionary of { 'jobid' : list(output_paths) }
+        :return:
+        """
+        # TODO add timestamp to each validate 'run' OR user-provided name
+
+        # Loops through all finished Job IDs and creates a subdirectory within
+        # the 'Validate Winnow Outputs' folder defined above simply named after
+        # each Job ID. All outputs are stored here for easy access.
+        for jobid in job_outputs.keys():
+            newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                           filePath='{}{}'.format(self.home_dir, self.validate_dir),
+                           body={'action':'mkdir',
+                                       'path':"Winnow/{}".format(jobid)})
+            print newf
+
+            # Copying all job outputs from the system archive directory to the
+            # newly created subdirectory, leaving the original archive as is.
+            for file in job_outputs[jobid]:
+                print "Copying {} to {}/Winnow/{}".format(file, self.validate_dir, jobid)
+                copyf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                           filePath='{}'.format(file),
+                           body={'action':'copy',
+                                       'path':"{}{}/Winnow/{}".format(
+                                           self.home_dir, self.validate_dir, jobid)})
+                print copyf
+
+            # TODO get Validate GWAS Outputs full path
+            self.output_folders[jobid] = "agave://{}{}/GWAS/{}".format(
+                self.home_dir, self.validate_dir, jobid)
+
+            # Checking files in the Validate directory after copying
+            print "Files in {}/Winnow/ after copy:".format(self.home_dir + self.validate_dir)
+            validate_files = [f for f in self.agave.files.list(
+                systemId='data.iplantcollaborative.org',
+                filePath="{}/Winnow/{}".format(self.home_dir + self.validate_dir, jobid))]
+
+            for file in validate_files:
+                print file
 
 
 if __name__ == '__main__':
