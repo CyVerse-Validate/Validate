@@ -87,7 +87,7 @@ class Pipeline:
         """
 
         #TODO encapsulate
-        if (self.password is None):
+        if self.password is None:
             self.password = getpass()
 
         # Establishing connection with Agave using the user's allocation username and password

@@ -180,7 +180,7 @@ def make_winnow_json(job_name, gwas_output_folder, ote_file):
 
     json_text = {
         "name" : 'Winnow_{}'.format(job_name),
-        "appId" : 'Winnow-1.0.1',
+        "appId" : "Winnow-1.0.1",
         "requestedTime" : "02:00:00",
         "archive" : "true",
         "inputs" : {
