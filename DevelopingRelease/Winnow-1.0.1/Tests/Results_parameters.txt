@@ -1,0 +1,4 @@
+Output File: 	Results
+Analysis Type: 	GWASWithBeta
+KT Type: 	OTE
+Threshold: 	0.05
