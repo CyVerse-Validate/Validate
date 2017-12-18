@@ -1,0 +1,15 @@
+{
+"jobName": "FLMMDongWangFull",
+"softwareName": "FaST-LMM-hpc-2.07u1",
+"requestedTime": "02:00:00",
+"archive": true,
+    "inputs":{
+        "inputFAM": "agave://data.iplantcollaborative.org/shared/syngenta_sim/Dong_Wang_sim/Analysis_Files/dongwang.fam",
+        "inputBED": "agave://data.iplantcollaborative.org/shared/syngenta_sim/Dong_Wang_sim/Analysis_Files/dongwang.bed",
+        "inputBIM": "agave://data.iplantcollaborative.org/shared/syngenta_sim/Dong_Wang_sim/Analysis_Files/dongwang.fam",
+        "inputPHENO": "agave://data.iplantcollaborative.org/shared/syngenta_sim/Dong_Wang_sim/Analysis_Files/dongwangpheno.txt"
+    },
+    "parameters":{
+        "output": "full_results"
+    }
+}
