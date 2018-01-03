@@ -1,0 +1,37 @@
+Ran into error running multiple requests on Pipeline.  Opened a second terminal tab and submitted a second job.  Job returned:
+
+    requests.exceptions.HTTPError: 400 Client Error: Bad Request
+
+and then first tab killed the polling with error:
+
+    Begin polling... 1 remaining.
+    Traceback (most recent call last):
+      File "PipelineAgavePy.py", line 596, in <module>
+        Pipeline()
+      File "PipelineAgavePy.py", line 81, in __init__
+        self.validate()
+      File "PipelineAgavePy.py", line 220, in validate
+        self.finished_gwas = self.poll_jobs(self.running_jobs)
+      File "PipelineAgavePy.py", line 399, in poll_jobs
+        job_status = self.agave.jobs.getStatus(jobId=job_id)
+      File "/anaconda/lib/python2.7/site-packages/agavepy/agave.py", line 498, in __call__
+        raise AgaveException(resp.json())
+    agavepy.agave.AgaveException: {u'fault': {u'message': u'Resource forbidden ', u'code': 900908, u'description': u'Access failure for API: /jobs/v2, version: v2 with key: d42bc8f4d2808bf0f6aceb81b6e5a2'}}
+
+Check jobs status on first submission and still pending.  Second Pipeline submission affected polling.  Must be from using one Agave account.
+
+Cannot submit job in a different terminal tab.
+
+Tried submitting in same tab as first job and received error:
+
+    requests.exceptions.HTTPError: 400 Client Error: BAD REQUEST
+
+Closed and reopened terminal session and still getting same error.
+
+LMM runs with no-winnow without errors.  Does not copy files into Validate directory that was created.
+
+Ridge is not currently available
+
+Tried to run winnow without gwas ( no informat no filetype and --no_gwas option); Submission finished but no results
+
+Status of parameter options
