@@ -1,0 +1,7 @@
+Should not be the issue but going to try and get new Winnow public to see if it will make a difference on pipeline.
+
+I think there is a problem with the way it tries to source data from an output folder currently that prevents the ability to run Winnow standalone.
+
+BayesR_2.00 is not public.  Will connect with JFonner and get published.
+
+Ridge is no longer listed as a public app.  Might need to republish.
