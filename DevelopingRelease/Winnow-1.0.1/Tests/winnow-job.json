@@ -4,8 +4,8 @@
 "requestedTime": "02:00:00",
 "archive": true,
     "inputs":{
-        "Class": "agave://data.iplantcollaborative.org/dhbrand/Winnow-1.0.1/Tests/kt.ote",
-        "Folder": "agave://data.iplantcollaborative.org/dhbrand/Winnow-1.0.1/Tests/OutputPLINK"
+        "Class": "agave://data.iplantcollaborative.org/dhbrand/ExampleData/Winnow/data/PLinkkt.ote",
+        "Folder": "agave://data.iplantcollaborative.org/dhbrand/ExampleData/Winnow/data/OutputPlink"
 
     },
     "parameters":{
