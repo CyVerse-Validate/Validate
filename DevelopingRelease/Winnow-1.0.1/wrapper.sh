@@ -44,7 +44,7 @@ if [ -n "$covar" ]; then
 	OptARGS="${OptARGS} --covar $covar"
 fi
 
-if [ $savep -eq 1 ]; then
+if [[ "$savep" -eq 1 ]]; then
 	OptARGS="${OptARGS} --savep"
 fi
 
@@ -66,3 +66,5 @@ echo python ./bin/winnow.py --Folder $Folder --Class $knowntruth --Snp $SNP --Sc
 python ./bin/winnow.py --Folder $Folder --Class $knowntruth --Snp $SNP --Score $Score --kttype $kttype --filename $filename $OptARGS
 
 rm -r $PWD/lib
+rm -r $PWD/bin
+rm -r $PWD/$Folder
