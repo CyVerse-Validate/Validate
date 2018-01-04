@@ -1,0 +1,12 @@
+RidgePredict-1.1u1 is available and running.
+    There are a few warnings about deprecated packages in sklearn that may need to be addressed in future updates to Stampede
+
+Programming note from JFonner: Several times in the agave job submission .err file there will be a unexpected unary operator error.  This can be from the wrapper not using double brackets "[[...]]" around statements similar to `[ $somevar -eq 12345 ]`
+
+ctrl-c interrupts polling
+
+So FaST-LMM is the only part of the pipeline that works correctly.  The pipeline does not appear to building the JSONs correctly for any apps after FaST-LMM.  With any other app I always receive the same HTTPError: 400 Client Error: Bad request.  
+
+Tried submitting -lmm and -rdg t the same time and it only saw -lmm.
+
+It looks like the Winnow JSON is being built correctly but it might be having an error because data is not being copied into the output folder where its looking for input.
