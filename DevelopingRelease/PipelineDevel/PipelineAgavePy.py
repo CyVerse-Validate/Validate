@@ -58,6 +58,7 @@ class Pipeline:
 
         self.username = ""
         self.password = ""
+        self.systemid = ""
         self.iplant = 'https://agave.iplantc.org/files/v2/media/system/data.iplantcollaborative.org'
         self.home_dir = ""
         self.home_full = ""
@@ -274,6 +275,11 @@ class Pipeline:
                                  "In this scenario, GWAS output data will be "
                                  "moved to the Validate directory and the "
                                  "process will complete.")
+        parser.add_argument("-sys", "--system", type=str,
+                            default="data.iplantcollaborative.org",
+                            help="System ID for the desired filesystem. Defaults"
+                                 "to data.iplantcollaborative.org if nonne is"
+                                 "provided.")
 
         # TODO get parameters for each GWAS somehow - potentially JSON?
         # TODO Add option for user to pass in their own JSONs instead of a folder
@@ -288,6 +294,7 @@ class Pipeline:
         self.desired_gwas = tuple([args.fastlmm, args.ridge, args.bayes, args.plink,
                                    args.qxpak, args.gemma, args.puma])
         self.dataset_name = self.data_folder.split("/")[-1]
+        self.systemid = args.system
         # TODO Add option for expandable apps?
 
     def parse_inputs(self):
@@ -345,6 +352,7 @@ class Pipeline:
 
         for gwas in self.desired_gwas:
             if gwas:
+                print("desired_gwas:\t{}\ngwas index:\t{}".format(self.desired_gwas, self.desired_gwas.index(gwas)))
                 self.gwas_jsons.append(JsonBuilder.make_gwas_json(
                     self.desired_gwas.index(gwas), self.dataset_name, self.inputs))
                 # else:
@@ -491,8 +499,8 @@ class Pipeline:
                 print copyf
 
             # TODO get Validate GWAS Outputs full path
-            self.output_folders[jobid] = "agave://{}{}/GWAS/{}".format(
-                self.home_dir, self.validate_dir, jobid)
+            self.output_folders[jobid] = "agave://{}{}{}/GWAS/{}".format(
+                self.systemid, self.home_dir, self.validate_dir, jobid)
 
             # Checking files in the Validate directory after copying
             print "Files in {}/GWAS/ after copy:".format(self.home_dir + self.validate_dir)
