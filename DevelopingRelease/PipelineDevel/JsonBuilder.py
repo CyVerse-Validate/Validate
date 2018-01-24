@@ -45,12 +45,16 @@ def ridge_json(data_name, input_dict):
     """Debug Statement"""
     print "Creating Ridge JSON."
 
+    # ridge_inputs = ["{k}: {v}".format(k=key, v=input_dict[key]) for key in input_dict]
+
     json_text = {
         "name": "RidgePredict_{}".format(data_name),
         "appId": "RidgePredict-1.1u1",
         "requestedTime": "00:30:00",
         "archive": True,
-        "inputs": input_dict,
+        "inputs": {
+            "inputPed": "{}".format(input_dict["inputPED"])
+        },
         "parameters": {
             "outputPed": "RidgePredict_{}.ped".format(data_name)
         }

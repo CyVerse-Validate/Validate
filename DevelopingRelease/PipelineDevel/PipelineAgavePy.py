@@ -7,6 +7,7 @@ import requests
 from getpass import getpass
 import time
 
+import sys
 from dateutil.tz import tzoffset
 
 import JsonBuilder
@@ -280,6 +281,11 @@ class Pipeline:
                             help="System ID for the desired filesystem. Defaults"
                                  "to data.iplantcollaborative.org if nonne is"
                                  "provided.")
+        parser.add_argument("-ote", "--truth", type=str,
+                            help="If the known-truth file to be used for Winnow"
+                                 "validation is not located within the given"
+                                 "input folder, it may be specificed separately"
+                                 "here.")
 
         # TODO get parameters for each GWAS somehow - potentially JSON?
         # TODO Add option for user to pass in their own JSONs instead of a folder
@@ -295,6 +301,7 @@ class Pipeline:
                                    args.qxpak, args.gemma, args.puma])
         self.dataset_name = self.data_folder.split("/")[-1]
         self.systemid = args.system
+        self.known_truth = args.truth
         # TODO Add option for expandable apps?
 
     def parse_inputs(self):
@@ -330,7 +337,7 @@ class Pipeline:
                     self.inputs['inputFAM'] = "agave://{}{}".format(file['system'], file['path'])
 
         # If the input data was declared as TPED/TMAP
-        else:
+        elif self.input_format == 't':
             for file in file_list:
                 if ".ote" in file.name:
                     self.known_truth = "agave://{}{}".format(file['system'], file['path'])
@@ -338,6 +345,9 @@ class Pipeline:
                     self.inputs['tped'] = "agave://{}{}".format(file['system'], file['path'])
                 elif ".tfam" in file.name:
                     self.inputs['tfam'] = "agave://{}{}".format(file['system'], file['path'])
+
+        else:
+            raise ValueError("Incorrect input format declared.")
 
     def build_jsons(self):
         """Builds JSONs from the parsed input information.
