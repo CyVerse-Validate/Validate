@@ -2,6 +2,7 @@ import json
 import os
 import agavepy.agave as a
 import argparse
+from uuid import getnode as get_mac
 
 import datetime
 import requests
@@ -96,12 +97,16 @@ class Pipeline:
         if self.password is None:
             self.password = getpass()
 
-        self.clientName = self.username + "-pipelineClient"
+        # generate a unique clientname based on agave username and host mac address
+        # could also add a uuid here...meah
+        self.clientName = self.username + "-" + get_mac() + "-pipelineClient"
+
         # print "{} / {}".format(self.username,self.password)
         # Establishing connection with Agave using the user's allocation username and password
         self.agave = a.Agave(api_server='https://agave.iplantc.org',
                              username=self.username, password=self.password,
                              client_name=self.clientName, verify=False)
+
         try:
            print  a.recover(self.clientName)
         except a.AgaveError:
