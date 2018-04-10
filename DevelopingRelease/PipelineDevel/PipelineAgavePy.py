@@ -99,7 +99,7 @@ class Pipeline:
 
         # generate a unique clientname based on agave username and host mac address
         # could also add a uuid here...meah
-        self.clientName = self.username + "-" + get_mac() + "-pipelineClient"
+        self.clientName = "{}-pipelineClient".format(self.username)
 
         # print "{} / {}".format(self.username,self.password)
         # Establishing connection with Agave using the user's allocation username and password
@@ -107,9 +107,8 @@ class Pipeline:
                              username=self.username, password=self.password,
                              client_name=self.clientName, verify=False)
 
-        try:
-           print  a.recover(self.clientName)
-        except a.AgaveError:
+        if  a.recover(self.clientName) == None :
+            #except a.AgaveError:
             print "No pipeline client cached in the local agavepy db. Searching for existing client..."
             self.client = [cl for cl in self.agave.clients.list() if cl['name'] == self.clientName]
             if not self.client:
