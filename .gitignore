@@ -11,3 +11,5 @@ lib
 DevelopingRelease/TestData/AlphaSim
 .Python
 requirements-py2.txt
+
+.DS_Store
