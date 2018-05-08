@@ -15,6 +15,8 @@ def fastlmm_json(data_name, input_dict):
     """Debug Statement"""
     print "Creating FaST-LMM JSON."
 
+    output = None
+
     json_text = {
         "name": "FaST-LMM_{}".format(data_name),
         "appId": "dooley-FaST-LMM-hpc-2.07",
@@ -31,7 +33,7 @@ def fastlmm_json(data_name, input_dict):
     # print type(json.dumps(json_text))
     # print json.dumps(json_text)
     # return json.dumps(json_text, indent=4, separators=(',', ': '))
-    return json_text
+    return json_text, output
 
 
 def ridge_json(data_name, input_dict):
@@ -45,7 +47,7 @@ def ridge_json(data_name, input_dict):
     """Debug Statement"""
     print "Creating Ridge JSON."
 
-    # ridge_inputs = ["{k}: {v}".format(k=key, v=input_dict[key]) for key in input_dict]
+    output = "RidgePredict_{}.ped".format(data_name)
 
     json_text = {
         "name": "RidgePredict_{}".format(data_name),
@@ -63,7 +65,7 @@ def ridge_json(data_name, input_dict):
     # file_name = 'RidgePredict_{}.json'.format(data_name)
     # with open(file_name, 'w') as f:
     #     json.dumps(json_text, f)
-    return json.dumps(json_text, indent=4, separators=(',', ': '))
+    return json.dumps(json_text, indent=4, separators=(',', ': ')), output
 
 
 def bayesr_json(data_name, input_dict):
@@ -76,6 +78,8 @@ def bayesr_json(data_name, input_dict):
     """
     """Debug Statement"""
     print "Creating BayesR JSON."
+
+    output = "BayesR_{}".format(data_name)
 
     json_text = {
         "name": "BayesR_{}".format(data_name),
@@ -94,7 +98,7 @@ def bayesr_json(data_name, input_dict):
     # file_name = 'BayesR_{}.json'.format(data_name)
     # with open(file_name, 'w') as f:
     #     json.dumps(json_text, f)
-    return json.dumps(json_text, indent=4, separators=(',', ': '))
+    return json.dumps(json_text, indent=4, separators=(',', ': ')), output
 
 
 def plink_json(data_name):
@@ -106,6 +110,8 @@ def plink_json(data_name):
     """
     """Debug Statement"""
     print "Creating PLINK JSON."
+
+    output = None
 
     json_text = {
         "name": "Plink_{}".format(data_name),
@@ -126,7 +132,7 @@ def plink_json(data_name):
     # file_name = 'PLINK_{}.json'.format(data_name)
     # with open(file_name, 'w') as f:
     #     json.dumps(json_text, f)
-    return json.dumps(json_text, indent=4, separators=(',', ': '))
+    return json.dumps(json_text, indent=4, separators=(',', ': ')), output
 
 
 #TODO make current pipeline implementation work with this input format
@@ -134,6 +140,8 @@ def qxpak_json(data_name, input_dict):
     """"""
     """Debug Statement"""
     print "Creating QxPak JSON."
+
+    output = None
 
     json_text = {
         "name": "QxPak_{}".format(data_name),
@@ -145,16 +153,21 @@ def qxpak_json(data_name, input_dict):
         }
     }
 
-    return json.dumps(json_text, indent=4, separators=(',', ': '))
+    return json.dumps(json_text, indent=4, separators=(',', ': ')), output
 
 #TODO find Gemma JSON?
 def gemma_json(data_name, input_dict):
     """"""
     """Debug Statement"""
     print "Creating Gemma JSON."
+
+    output = None
+
     pass
 
 def puma_json(data_name, input_dict):
+    output = None
+
     json_text = {
         "name": "puma_{}".format(data_name),
         "appId": "dooley-Puma-1.0",
@@ -169,7 +182,7 @@ def puma_json(data_name, input_dict):
         }
     }
 
-    return json_text
+    return json_text, output
 
 def make_gwas_json(selected_gwas, dataset_name, inputs):
     """Selected GWAS is a list of binary values with each element representing

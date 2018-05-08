@@ -15,6 +15,8 @@ import JsonBuilder
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from time import gmtime, strftime
 
+from uuid import getnode as get_mac
+
 __author__ = "Michael J. Suggs"
 __credits__ = ["Michael Suggs"]
 __license__ = "GPL"
@@ -96,14 +98,14 @@ class Pipeline:
         if self.password is None:
             self.password = getpass()
 
-        self.clientName = self.username + "-pipelineClient"
+        self.clientName = self.username + "-pipelineClient-" + get_mac()
         # print "{} / {}".format(self.username,self.password)
         # Establishing connection with Agave using the user's allocation username and password
         self.agave = a.Agave(api_server='https://agave.iplantc.org',
                              username=self.username, password=self.password,
                              client_name=self.clientName, verify=False)
         try:
-           print  a.recover(self.clientName)
+           print a.recover(self.clientName)
         except a.AgaveError:
             print "No pipeline client cached in the local agavepy db. Searching for existing client..."
             self.client = [cl for cl in self.agave.clients.list() if cl['name'] == self.clientName]
