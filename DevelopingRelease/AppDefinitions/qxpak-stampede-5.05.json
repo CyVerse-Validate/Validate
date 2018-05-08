@@ -1,0 +1,155 @@
+{
+  "name": "dooley-qxpak-stampede",
+  "icon": null,
+  "parallelism": "SERIAL",
+  "defaultProcessorsPerNode": 1,
+  "defaultMemoryPerNode": 4,
+  "defaultNodeCount": 1,
+  "defaultMaxRunTime": "05:00:00",
+  "defaultQueue": "normal",
+  "version": "5.05",
+  "isPublic": false,
+  "helpURI": "http://nce.ads.uga.edu/~ignacy/numpub/blupf90/docs/qxpak.pdf",
+  "label": "QxPak (Stampede)",
+  "shortDescription": "QxPak is a Fortran program aimed at simplifying statistical genetic analyses implementing a mixed model approach.",
+  "longDescription": "This software aims at simplifying statistical genetic analyses implementing a coherent and unified mixed model approach. The goal is to provide software that can be used in a wide variety of situations with ample genetic and statistical modeling flexibility. The main kind of analyses that QxPak may be used for include regular mixed model solving, QTL, segment analysis, multitrait, association, molecular relation matrix, and sequence based association studies.",
+  "tags": [
+    "GWAS",
+    "Mixed model"
+  ],
+  "ontology": [],
+  "executionType": "HPC",
+  "executionSystem": "stampede2-dooley",
+  "deploymentPath": "spt6655/applications/qxpak-5.05",
+  "deploymentSystem": "data.iplantcollaborative.org",
+  "templatePath": "qxpak_wrapper.sh",
+  "testPath": "qxpak_test.sh",
+  "checkpointable": true,
+  "modules": [],
+  "available": true,
+  "inputs": [
+    {
+      "id": "parameter_file",
+      "value": {
+        "validator": null,
+        "visible": true,
+        "required": true,
+        "order": 0,
+        "enquote": false,
+        "default": "agave://data.iplantcollaborative.org/spt6655/applications/qxpak-5.05/test/qxpak_1.par"
+      },
+      "details": {
+        "label": "Parameter file",
+        "description": "Parameter file where all settings and additional input files are specified",
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    },
+    {
+      "id": "data_file",
+      "value": {
+        "validator": null,
+        "visible": true,
+        "required": true,
+        "order": 0,
+        "enquote": false,
+        "default": "agave://data.iplantcollaborative.org/spt6655/applications/qxpak-5.05/test/qxpak_1.dat"
+      },
+      "details": {
+        "label": "Data file",
+        "description": "Data file in a free format file that contains the phenotypes, records, and effects. Note that it may contain more information than is used in the model.",
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    },
+    {
+      "id": "pedigree_file",
+      "value": {
+        "validator": null,
+        "visible": true,
+        "required": true,
+        "order": 0,
+        "enquote": false,
+        "default": "agave://data.iplantcollaborative.org/spt6655/applications/qxpak-5.05/test/qxpak_1.ped"
+      },
+      "details": {
+        "label": "Pedigree file",
+        "description": "The pedigree file displays the pedigree information. The format must be as follows: individual, father, mother, (sex(breed)). Sex and/or breed may be missing.",
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    },
+    {
+      "id": "marker_file",
+      "value": {
+        "validator": null,
+        "visible": true,
+        "required": true,
+        "order": 0,
+        "enquote": false,
+        "default": "agave://data.iplantcollaborative.org/spt6655/applications/qxpak-5.05/test/qxpak_1.mkr"
+      },
+      "details": {
+        "label": "Marker file",
+        "description": "The marker file offers genetic marker and genotype information. The file may be in either usual format or transposed format (see helpURL link for more details)",
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "id": "output",
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+        "order": 0,
+        "enquote": false,
+        "default": "test",
+        "validator": null
+      },
+      "details": {
+        "label": "Output file name",
+        "description": "The desired name of the output file for QxPak",
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    }
+  ],
+  "outputs": []
+}

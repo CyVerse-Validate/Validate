@@ -5,3 +5,9 @@
 
 *.pyc
 *.name
+bin
+include
+lib
+DevelopingRelease/TestData/AlphaSim
+.Python
+requirements-py2.txt

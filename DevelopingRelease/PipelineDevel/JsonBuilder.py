@@ -17,7 +17,7 @@ def fastlmm_json(data_name, input_dict):
 
     json_text = {
         "name": "FaST-LMM_{}".format(data_name),
-        "appId": "FaST-LMM-hpc-2.07u1",
+        "appId": "dooley-FaST-LMM-hpc-2.07",
         "archive": True,
         "inputs": input_dict,
         "parameters": {
@@ -49,7 +49,7 @@ def ridge_json(data_name, input_dict):
 
     json_text = {
         "name": "RidgePredict_{}".format(data_name),
-        "appId": "RidgePredict-1.1u1",
+        "appId": "dooley-RidgePredict-1.1",
         "requestedTime": "00:30:00",
         "archive": True,
         "inputs": {
@@ -79,7 +79,7 @@ def bayesr_json(data_name, input_dict):
 
     json_text = {
         "name": "BayesR_{}".format(data_name),
-        "appId": "bayesR-2.00u1",
+        "appId": "dooley-bayesR-2.00",
         "processorsPerNode": 16,
         "requestedTime": "48:00:00",
         "memoryPerNode": 32,
@@ -137,7 +137,7 @@ def qxpak_json(data_name, input_dict):
 
     json_text = {
         "name": "QxPak_{}".format(data_name),
-        "appId": "qxpak-stampede-5.05u2",
+        "appId": "dooley-qxpak-stampede-5.05",
         "archive": True,
         "inputs": input_dict,
         "parameter": {
@@ -157,7 +157,7 @@ def gemma_json(data_name, input_dict):
 def puma_json(data_name, input_dict):
     json_text = {
         "name": "puma_{}".format(data_name),
-        "appId": "Puma-1.0u1",
+        "appId": "dooley-Puma-1.0",
         "requestedTime": "00:05:00",
         "batchQueue": "serial",
         "archive": True,
@@ -220,7 +220,7 @@ def make_winnow_json(job_name, gwas_output_folder, ote_file):
 
     json_text = {
         "name" : 'Winnow_{}'.format(job_name),
-        "appId" : "Winnow-1.0.1",
+        "appId" : "dooley-Winnow-1.0.1",
         "requestedTime" : "02:00:00",
         "archive" : "true",
         "inputs" : {

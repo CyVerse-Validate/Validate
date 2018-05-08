@@ -1,0 +1,806 @@
+{
+  "name": "dooley-BayPass",
+  "icon": null,
+  "parallelism": "SERIAL",
+  "defaultProcessorsPerNode": 1,
+  "defaultMemoryPerNode": 1,
+  "defaultNodeCount": 1,
+  "defaultMaxRunTime": "12:00:00",
+  "defaultQueue": "normal",
+  "version": "2.0",
+  "isPublic": false,
+  "helpURI": "http://www1.montpellier.inra.fr/CBGP/software/baypass/files/BayPass_manual_2.1.pdf",
+  "label": "baypass",
+  "shortDescription": "Genome-Wide Scan for Adaptive Differentiation and Association Analysis with population-specific covariables.",
+  "longDescription": "BayPass is a population genomics software which is primarily aimed at identifying genetic markers subjected to selection and/or associated to population-specific covariates (e.g., environmental variables, quantitative or categorical phenotypic characteristics).",
+  "tags": [
+    "GWAS",
+    "genome",
+    "baypass",
+    "gwas"
+  ],
+  "ontology": [
+    "EDAM"
+  ],
+  "executionType": "HPC",
+  "executionSystem": "stampede2-dooley",
+  "deploymentPath": "dhbrand/BayPass-2.0",
+  "deploymentSystem": "data.iplantcollaborative.org",
+  "templatePath": "wrapper.sh",
+  "testPath": "test.sh",
+  "checkpointable": false,
+  "modules": [],
+  "inputs": [
+    {
+      "id": "gfile",
+      "value": {
+        "validator": "agave://data.iplantcollaborative.org/dhbrand/BayPass-2.0/examples/lsa.geno",
+        "visible": true,
+        "required": true,
+        "order": 0,
+        "enquote": false,
+        "default": "agave://data.iplantcollaborative.org/dhbrand/BayPass-2.0/examples/lsa.geno"
+      },
+      "details": {
+        "label": "genotyping file name",
+        "description": null,
+        "argument": "-gfile",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    },
+    {
+      "id": "efile",
+      "value": {
+        "validator": "agave://data.iplantcollaborative.org/dhbrand/BayPass-2.0/examples/omega.bta",
+        "visible": true,
+        "required": false,
+        "order": 0,
+        "enquote": false,
+        "default": "agave://data.iplantcollaborative.org/dhbrand/BayPass-2.0/examples/omega.bta"
+      },
+      "details": {
+        "label": "covariates file name",
+        "description": null,
+        "argument": "-efile",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    },
+    {
+      "id": "poolsizefile",
+      "value": {
+        "validator": "agave://data.iplantcollaborative.org/dhbrand/BayPass-2.0/examples/data.poolsize",
+        "visible": true,
+        "required": false,
+        "order": 0,
+        "enquote": false,
+        "default": null
+      },
+      "details": {
+        "label": "pool size file name",
+        "description": null,
+        "argument": "-poolsizefile",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    },
+    {
+      "id": "omegafile",
+      "value": {
+        "validator": null,
+        "visible": true,
+        "required": false,
+        "order": 0,
+        "enquote": false,
+        "default": null
+      },
+      "details": {
+        "label": "Name of the omega matrix file => inactivate estim. of omega",
+        "description": null,
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": [],
+        "fileTypes": []
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "id": "npop",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0,
+        "validator": null
+      },
+      "details": {
+        "label": "number of populations",
+        "description": null,
+        "argument": "-npop",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "scalecov",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "string",
+        "order": 0,
+        "enquote": false,
+        "default": "",
+        "validator": null
+      },
+      "details": {
+        "label": "scale covariates",
+        "description": null,
+        "argument": "-scalecov",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "outprefix",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "string",
+        "order": 0,
+        "enquote": false,
+        "default": null,
+        "validator": null
+      },
+      "details": {
+        "label": "prefix for output file name",
+        "description": null,
+        "argument": "-outprefix",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "setpibetapar",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "flag",
+        "order": 0,
+        "enquote": false,
+        "default": false,
+        "validator": null
+      },
+      "details": {
+        "label": "Inactivate estimation of Pi beta priors parameters",
+        "description": null,
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "rho",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1,
+        "validator": null
+      },
+      "details": {
+        "label": "Rho parameter of the Wishart prior on omega",
+        "description": null,
+        "argument": "-rho",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "betapipriormin",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1,
+        "validator": null
+      },
+      "details": {
+        "label": "Pi Beta prior minimum parameter (if -setpibetapar)",
+        "description": null,
+        "argument": "-betapipriormin",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "betapipriormax",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1,
+        "validator": null
+      },
+      "details": {
+        "label": "Pi Beta prior maximum parameter (if -setpibetapar)",
+        "description": null,
+        "argument": "-betapipriormax",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "minbeta",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": -0.3,
+        "validator": null
+      },
+      "details": {
+        "label": "Lower beta coef. for the grid",
+        "description": null,
+        "argument": "-minbeta",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "maxbeta",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0.3,
+        "validator": null
+      },
+      "details": {
+        "label": "Upper beta coef. for the grid",
+        "description": null,
+        "argument": "-maxbeta",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "nbetagrid",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 201,
+        "validator": null
+      },
+      "details": {
+        "label": "Number of grid points (IS covariate mode)",
+        "description": null,
+        "argument": "-nbetagrid",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "covmcmc",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "flag",
+        "order": 0,
+        "enquote": false,
+        "default": false,
+        "validator": null
+      },
+      "details": {
+        "label": "Activate mcmc covariate mode (deactivate estim. of omega)",
+        "description": null,
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "auxmodel",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "flag",
+        "order": 0,
+        "enquote": false,
+        "default": false,
+        "validator": null
+      },
+      "details": {
+        "label": "Activate Auxiliary variable mode to estimate BF",
+        "description": null,
+        "argument": null,
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "isingbeta",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0,
+        "validator": null
+      },
+      "details": {
+        "label": "Beta (so-called inverse temperature) of the Ising model",
+        "description": null,
+        "argument": "-isingbeta",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "auxPbetapriormin",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0.02,
+        "validator": null
+      },
+      "details": {
+        "label": "auxiliary P Beta prior minumum parameter",
+        "description": null,
+        "argument": "-auxPbetapriormin",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "auxPbetapriormax",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1.98,
+        "validator": null
+      },
+      "details": {
+        "label": "auxiliary P Beta prior maximum parameter",
+        "description": null,
+        "argument": "-auxPbetapriormax",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "nthreads",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1,
+        "validator": null
+      },
+      "details": {
+        "label": "Number of threads",
+        "description": null,
+        "argument": "-nthreads",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "nval",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1000,
+        "validator": null
+      },
+      "details": {
+        "label": "Number of post-burnin and thinned samples to generate",
+        "description": null,
+        "argument": "-nval",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "thin",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 25,
+        "validator": null
+      },
+      "details": {
+        "label": "Size of the thinning (record one every thin post-burnin sample)",
+        "description": null,
+        "argument": "-thin",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "burnin",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 5000,
+        "validator": null
+      },
+      "details": {
+        "label": "Burn-in length",
+        "description": null,
+        "argument": "-burnin",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "npilot",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 20,
+        "validator": null
+      },
+      "details": {
+        "label": "Number of pilot runs (to adjust proposal distributions)",
+        "description": null,
+        "argument": "-npilot",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "pilotlength",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1000,
+        "validator": null
+      },
+      "details": {
+        "label": "Pilot run length",
+        "description": null,
+        "argument": "-pilotlength",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "accinf",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0.25,
+        "validator": null
+      },
+      "details": {
+        "label": "Lower target acceptance rate bound",
+        "description": null,
+        "argument": "-accinf",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "accsup",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0.4,
+        "validator": null
+      },
+      "details": {
+        "label": "Upper target acceptance rate bound",
+        "description": null,
+        "argument": "-accsup",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "adjrate",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1.25,
+        "validator": null
+      },
+      "details": {
+        "label": "Adjustement factor",
+        "description": null,
+        "argument": "-adjrate",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "d0pi",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0.5,
+        "validator": null
+      },
+      "details": {
+        "label": "Initial delta for the pi all. freq. proposal",
+        "description": null,
+        "argument": "-d0pi",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "d0pij",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 0.05,
+        "validator": null
+      },
+      "details": {
+        "label": "Initial delta for the pij all. freq. proposal (alt. update)",
+        "description": null,
+        "argument": "-d0pij",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "d0yij",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 1,
+        "validator": null
+      },
+      "details": {
+        "label": "Initial delta for the yij all. freq. proposal (PoolSeq mode)",
+        "description": null,
+        "argument": "-d0yij",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    },
+    {
+      "id": "seed",
+      "value": {
+        "visible": true,
+        "required": false,
+        "type": "number",
+        "order": 0,
+        "enquote": false,
+        "default": 5001,
+        "validator": null
+      },
+      "details": {
+        "label": "Random Number Generator seed",
+        "description": null,
+        "argument": "-seed",
+        "showArgument": false,
+        "repeatArgument": false
+      },
+      "semantics": {
+        "minCardinality": 0,
+        "maxCardinality": 1,
+        "ontology": []
+      }
+    }
+  ],
+  "outputs": []
+}

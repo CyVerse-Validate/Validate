@@ -1,4 +1,5 @@
 import json
+import os
 import agavepy.agave as a
 import argparse
 
@@ -74,7 +75,7 @@ class Pipeline:
         self.running_jobs = {}      # Running jobs dictionary with the format { 'id' : 'archivePath' }
         self.finished_gwas = {}     # Finished jobs dictionary with the format { 'id' : list[RemoteFile] }
         self.output_folders = {}    # Output folder location within the 'Validate' directory
-
+        self.clientName = ""
         self.checkArgs()
 
         print "Beginning Agave init."
@@ -88,31 +89,55 @@ class Pipeline:
         :return:
         """
 
+        if self.username is None:
+            self.username = raw_input("Username:")
+
         #TODO encapsulate
         if self.password is None:
             self.password = getpass()
 
+        self.clientName = self.username + "-pipelineClient"
+        # print "{} / {}".format(self.username,self.password)
         # Establishing connection with Agave using the user's allocation username and password
         self.agave = a.Agave(api_server='https://agave.iplantc.org',
                              username=self.username, password=self.password,
-                             verify=False)
+                             client_name=self.clientName, verify=False)
+        try:
+           print  a.recover(self.clientName)
+        except a.AgaveError:
+            print "No pipeline client cached in the local agavepy db. Searching for existing client..."
+            self.client = [cl for cl in self.agave.clients.list() if cl['name'] == self.clientName]
+            if not self.client:
+                print "Making new pipeline client: " + self.clientName
+                self.client = self.agave.clients.create(
+                    body={'clientName': self.clientName})
+            else:
+                print "Existing pipline client found, but not stored locally. Recreating: " + self.clientName
+                self.agave.clients.delete(clientName=self.clientName)
+                self.client = self.agave.clients.create(body={'clientName': self.clientName})
+
+
+
 
         # Check for an existing Agave client
         # If none exists, a new one is created
-        self.client = [cl for cl in self.agave.clients.list() if cl['name'] == 'pipelineClient']
-        if not self.client:
-            print "Making new Agave client."
-            self.client = self.agave.clients.create(
-                body={'clientName': 'pipelineClient'})
-
-        else:
-            print "Pipeline client extant."
-            self.agave.clients.delete(clientName='pipelineClient')
-            self.client = self.agave.clients.create(body={'clientName': 'pipelineClient'})
+        # for clnt in self.agave.clients.list():
+        #     print clnt
+        # print self.agave.token
+        # self.client = [cl for cl in self.agave.clients.list() if cl['name'] == self.clientName]
+        # if not self.client:
+        #     print "Making new Agave client: " + self.clientName
+        #     self.client = self.agave.clients.create(
+        #         body={'clientName': self.clientName})
+        # else:
+        #     print "Pipeline client extant."
+        #     self.agave.clients.delete(clientName='pipelineClient')
+        #     self.client = self.agave.clients.create(body={'clientName': self.clientName})
 
         # Grabbing token and links from the created Agave client
         self.agave_token = self.agave.token
         self.access_token = self.agave_token.token_info['access_token']
+        # print self.agave_token.token_info
         self.home_dir = '/{}'.format(self.username)
         self.home_full = self.iplant + self.home_dir
         self.validate_dir = '/Validate/{}'.format(self.run_date)
@@ -238,8 +263,11 @@ class Pipeline:
         # if simulation, make simulated data and folder for data before validating
         parser = argparse.ArgumentParser()
         parser.add_argument("-u", "--username", type=str,
+                            default=os.getenv("AGAVE_USERNAME"),
                             help="Username used for Agave services.")
-        parser.add_argument("--password", type=str, help="Password used for Agave services.")
+        parser.add_argument("--password", type=str,
+                            default=os.getenv("AGAVE_PASSWORD"),
+                            help="Password used for Agave services.")
         parser.add_argument("-i", "--InFormat", type=str,
                             help="Input format:\n"
                                  "\tp for PED/MAP\n"
@@ -318,6 +346,7 @@ class Pipeline:
         if self.input_format == 'p':
             for file in file_list:
                 if ".ote" in file.name:
+                    print "Found ote file: {}".format(file.name)
                     self.known_truth = "agave://{}{}".format(file['system'], file['path'])
                 elif ".ped" in file.name:
                     self.inputs['inputPED'] = "agave://{}{}".format(file['system'], file['path'])
@@ -558,6 +587,7 @@ class Pipeline:
         for JSON in winnow_jsons:
             print "Submitting: {}".format(json.dumps(JSON, indent=4, separators=(',', ': ')))
             job = self.agave.jobs.submit(body=JSON)
+
             self.running_jobs[job['id']] = job
             print "Submitted: {}".format(job['id'])
 
