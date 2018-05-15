@@ -1,6 +1,6 @@
 {
-  "id": "PLINK-hpc-1.07",
-  "name": "PLINK-hpc",
+  "id": "dooley-PLINK-hpc-1.07",
+  "name": "dooley-PLINK-hpc",
   "icon": null,
   "uuid": "4881398559451058661-e0bd34dffff8de6-0001-005",
   "parallelism": "SERIAL",
@@ -30,7 +30,7 @@
     "http: //sswapmeet.sswap.info/agave/apps/Application"
   ],
   "executionType": "HPC",
-  "executionSystem": "stampede-05012015-2313-kamichel",
+  "executionSystem": "stampede2-dooley",
   "deploymentPath": "kamichels/applications/plink-1.07/stampede",
   "deploymentSystem": "data.iplantcollaborative.org",
   "templatePath": "plink-1.07.sh",

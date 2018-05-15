@@ -115,7 +115,7 @@ def plink_json(data_name):
 
     json_text = {
         "name": "Plink_{}".format(data_name),
-        "appId": "PLINK-hpc-1.07u2",
+        "appId": "dooley-PLINK-hpc-1.07",
         "processorsPerNode": 16,
         "requestedTime": "01:00:00",
         "memoryPerNode": 32,
