@@ -98,7 +98,7 @@ class Pipeline:
         if self.password is None:
             self.password = getpass()
 
-        self.clientName = self.username + "-pipelineClient-" + get_mac()
+        self.clientName = self.username + "-pipelineClient"
         # print "{} / {}".format(self.username,self.password)
         # Establishing connection with Agave using the user's allocation username and password
         self.agave = a.Agave(api_server='https://agave.iplantc.org',
