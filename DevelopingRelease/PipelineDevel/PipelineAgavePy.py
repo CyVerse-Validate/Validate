@@ -99,18 +99,42 @@ class Pipeline:
 
         # generate a unique clientname based on agave username and host mac address
         # could also add a uuid here...meah
-        self.clientName = "{}-pipelineClient".format(self.username)
+        self.clientName = "{}-pipelineClient-{}".format(self.username, get_mac()) \
+            if (self.clientName == None) else self.clientName
+
+        print "{a}:\t{b}".format(a="clientName", b=self.clientName)
 
         # print "{} / {}".format(self.username,self.password)
-        # Establishing connection with Agave using the user's allocation username and password
-        self.agave = a.Agave(api_server='https://agave.iplantc.org',
-                             username=self.username, password=self.password,
-                             client_name=self.clientName, verify=False)
 
-        if  a.recover(self.clientName) == None :
-            #except a.AgaveError:
+        # Establishing connection with Agave using the user's allocation username and password
+        # self.agave = a.Agave(api_server='https://agave.iplantc.org',
+        #                      username=self.username, password=self.password,
+        #                      client_name=self.clientName, verify=False)
+        #
+        # if a.recover(self.clientName) == None:
+        #     #except a.AgaveError:
+        #     print "No pipeline client cached in the local agavepy db. Searching for existing client..."
+        #     self.client = [cl for cl in self.agave.clients.list() if cl['name'] == self.clientName]
+        #     if not self.client:
+        #         print "Making new pipeline client: " + self.clientName
+        #         self.client = self.agave.clients.create(
+        #             body={'clientName': self.clientName})
+        #     else:
+        #         print "Existing pipline client found, but not stored locally. Recreating: " + self.clientName
+        #         self.agave.clients.delete(clientName=self.clientName)
+        #         self.client = self.agave.clients.create(body={'clientName': self.clientName})
+
+        try:
+            # TODO try instantiating without providing clientname - then search after.
+            self.agave = a.Agave(api_server='https://agave.iplantc.org',
+                                 username=self.username, password=self.password,
+                                 client_name=self.clientName, verify=False)
+            # a.recover(self.clientName)
+        except KeyError:
+            # TODO adapt client checks and make new client if needed.
             print "No pipeline client cached in the local agavepy db. Searching for existing client..."
-            self.client = [cl for cl in self.agave.clients.list() if cl['name'] == self.clientName]
+            self.client = [cl for cl in self.agave.clients.list() if
+                           cl['name'] == self.clientName]
             if not self.client:
                 print "Making new pipeline client: " + self.clientName
                 self.client = self.agave.clients.create(
@@ -118,10 +142,8 @@ class Pipeline:
             else:
                 print "Existing pipline client found, but not stored locally. Recreating: " + self.clientName
                 self.agave.clients.delete(clientName=self.clientName)
-                self.client = self.agave.clients.create(body={'clientName': self.clientName})
-
-
-
+                self.client = self.agave.clients.create(
+                    body={'clientName': self.clientName})
 
         # Check for an existing Agave client
         # If none exists, a new one is created
@@ -318,6 +340,11 @@ class Pipeline:
                                  "validation is not located within the given"
                                  "input folder, it may be specificed separately"
                                  "here.")
+        parser.add_argument("-c", "--client_name", type=str, default=None,
+                            help="Name of existing Validate Pipeline client."
+                                 "If none is supplied, checks the Agave cache."
+                                 "If name is supplied but no client exists, a "
+                                 "new client with the provided name is created.")
 
         # TODO get parameters for each GWAS somehow - potentially JSON?
         # TODO Add option for user to pass in their own JSONs instead of a folder
@@ -334,6 +361,7 @@ class Pipeline:
         self.dataset_name = self.data_folder.split("/")[-1]
         self.systemid = args.system
         self.known_truth = args.truth
+        self.clientName = args.client_name
         # TODO Add option for expandable apps?
 
     def parse_inputs(self):
