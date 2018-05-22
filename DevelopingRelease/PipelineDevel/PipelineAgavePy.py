@@ -81,8 +81,8 @@ class Pipeline:
 
         print "Beginning Agave init."
         self.agave_initialization()
-        # self.cyverse_test()
-        self.validate()
+        self.cyverse_test()
+        # self.validate()
 
     def agave_initialization(self):
         """Initializes Agave client via AgavePy for executing desired jobs on Stampede.
@@ -106,11 +106,11 @@ class Pipeline:
 
         # print "{} / {}".format(self.username,self.password)
 
-        # Establishing connection with Agave using the user's allocation username and password
+        # # Establishing connection with Agave using the user's allocation username and password
         # self.agave = a.Agave(api_server='https://agave.iplantc.org',
         #                      username=self.username, password=self.password,
         #                      client_name=self.clientName, verify=False)
-        #
+
         # if a.recover(self.clientName) == None:
         #     #except a.AgaveError:
         #     print "No pipeline client cached in the local agavepy db. Searching for existing client..."
@@ -130,8 +130,13 @@ class Pipeline:
                                  username=self.username, password=self.password,
                                  client_name=self.clientName, verify=False)
             # a.recover(self.clientName)
+
         except KeyError:
             # TODO adapt client checks and make new client if needed.
+            self.agave = a.Agave(api_server='https://agave.iplantc.org',
+                                 username=self.username, password=self.password,
+                                 verify=False)
+
             print "No pipeline client cached in the local agavepy db. Searching for existing client..."
             self.client = [cl for cl in self.agave.clients.list() if
                            cl['name'] == self.clientName]
@@ -145,6 +150,7 @@ class Pipeline:
                 self.client = self.agave.clients.create(
                     body={'clientName': self.clientName})
 
+        # Original Validate Pipeline method.
         # Check for an existing Agave client
         # If none exists, a new one is created
         # for clnt in self.agave.clients.list():
@@ -240,7 +246,7 @@ class Pipeline:
 
         print "\n\nFiles:"
         file_list = [f for f in self.agave.files.list(
-            systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
+            systemId=self.systemid, filePath=self.data_folder)]
         for file in file_list:
             print "agave://{}{}".format(file['system'], file['path'])
 
@@ -249,12 +255,12 @@ class Pipeline:
         # for app in apps_list:
         #     print "{}:\n".format(app['id'])
 
-        remote_file_list = self.agave.files.list(
-            systemId='data.iplantcollaborative.org',
-            filePath=job_test['530158803913141785-242-ac113-0001-007']['archivePath'])
-
-        for f in remote_file_list:
-            print f
+        # remote_file_list = self.agave.files.list(
+        #     systemId=self.systemid,
+        #     filePath=job_test['530158803913141785-242-ac113-0001-007']['archivePath'])
+        #
+        # for f in remote_file_list:
+        #     print f
 
     def validate(self):
         """Main run method for the Validate Workflow.
@@ -371,7 +377,7 @@ class Pipeline:
         """
         # TODO pull phenotype file too
         file_list = [f for f in self.agave.files.list(
-            systemId='data.iplantcollaborative.org', filePath=self.data_folder)]
+            systemId=self.systemid, filePath=self.data_folder)]
 
         # TODO error check if no input file is found
         # If the input data was declared as PED/MAP
@@ -520,7 +526,7 @@ class Pipeline:
         for jobid in jobid_dict.keys():
             job_outputs = []
             remote_file_list = self.agave.files.list(
-                systemId='data.iplantcollaborative.org',
+                systemId=self.systemid,
                 filePath=jobid_dict[jobid]['archivePath'])
 
             for file in remote_file_list:
@@ -542,7 +548,7 @@ class Pipeline:
         # TODO add timestamp to each validate 'run' OR user-provided name
         self.output_folders = {}
 
-        newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+        newf = self.agave.files.manage(systemId=self.systemid,
                            filePath='{}'.format(self.home_dir),
                            body={'action':'mkdir',
                                        'path':'{}'.format(self.validate_dir)})
@@ -552,7 +558,7 @@ class Pipeline:
         # the 'Validate GWAS Outputs' folder defined above simply named after
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys():
-            newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+            newf = self.agave.files.manage(systemId=self.systemid,
                            filePath='{}{}'.format(self.home_dir, self.validate_dir),
                            body={'action':'mkdir',
                                        'path':"GWAS/{}".format(jobid)})
@@ -562,7 +568,7 @@ class Pipeline:
             # newly created subdirectory, leaving the original archive as is.
             for file in job_outputs[jobid]:
                 print "Copying {} to {}/GWAS/{}".format(file, self.validate_dir, jobid)
-                copyf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                copyf = self.agave.files.manage(systemId=self.systemid,
                            filePath='{}'.format(file),
                            body={'action':'copy',
                                        'path':"{}{}/GWAS/{}".format(
@@ -576,7 +582,7 @@ class Pipeline:
             # Checking files in the Validate directory after copying
             print "Files in {}/GWAS/ after copy:".format(self.home_dir + self.validate_dir)
             validate_files = [f for f in self.agave.files.list(
-                systemId='data.iplantcollaborative.org',
+                systemId=self.systemid,
                 filePath="{}/GWAS/{}".format(self.home_dir + self.validate_dir, jobid))]
 
             for file in validate_files:
@@ -641,7 +647,7 @@ class Pipeline:
         # the 'Validate Winnow Outputs' folder defined above simply named after
         # each Job ID. All outputs are stored here for easy access.
         for jobid in job_outputs.keys():
-            newf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+            newf = self.agave.files.manage(systemId=self.systemid,
                            filePath='{}{}'.format(self.home_dir, self.validate_dir),
                            body={'action':'mkdir',
                                        'path':"Winnow/{}".format(jobid)})
@@ -651,7 +657,7 @@ class Pipeline:
             # newly created subdirectory, leaving the original archive as is.
             for file in job_outputs[jobid]:
                 print "Copying {} to {}/Winnow/{}".format(file, self.validate_dir, jobid)
-                copyf = self.agave.files.manage(systemId='data.iplantcollaborative.org',
+                copyf = self.agave.files.manage(systemId=self.systemid,
                            filePath='{}'.format(file),
                            body={'action':'copy',
                                        'path':"{}{}/Winnow/{}".format(
@@ -665,7 +671,7 @@ class Pipeline:
             # Checking files in the Validate directory after copying
             print "Files in {}/Winnow/ after copy:".format(self.home_dir + self.validate_dir)
             validate_files = [f for f in self.agave.files.list(
-                systemId='data.iplantcollaborative.org',
+                systemId=self.systemid,
                 filePath="{}/Winnow/{}".format(self.home_dir + self.validate_dir, jobid))]
 
             for file in validate_files:
