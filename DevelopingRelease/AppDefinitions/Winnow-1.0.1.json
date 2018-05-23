@@ -1,5 +1,5 @@
 {
-  "name": "dooley-Winnow",
+  "name": "Winnow-1.0.3",
   "icon": null,
   "parallelism": "SERIAL",
   "defaultProcessorsPerNode": 1,

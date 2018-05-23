@@ -1,5 +1,5 @@
 {
-  "name": "dooley-Puma",
+  "name": "Puma-1.1",
   "icon": null,
   "parallelism": "SERIAL",
   "defaultProcessorsPerNode": 1,

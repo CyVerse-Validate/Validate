@@ -1,5 +1,5 @@
 {
-  "name": "dooley-RidgePredict",
+  "name": "RidgePredict-1.2.0",
   "icon": null,
   "parallelism": "SERIAL",
   "defaultProcessorsPerNode": 1,
