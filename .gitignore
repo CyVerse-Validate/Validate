@@ -13,3 +13,5 @@ DevelopingRelease/TestData/AlphaSim
 requirements-py2.txt
 
 .DS_Store
+
+.Rproj.user*
