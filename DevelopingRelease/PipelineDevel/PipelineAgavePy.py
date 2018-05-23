@@ -81,8 +81,8 @@ class Pipeline:
 
         print "Beginning Agave init."
         self.agave_initialization()
-        self.cyverse_test()
-        # self.validate()
+        # self.cyverse_test()
+        self.validate()
 
     def agave_initialization(self):
         """Initializes Agave client via AgavePy for executing desired jobs on Stampede.
@@ -166,6 +166,7 @@ class Pipeline:
         #     self.agave.clients.delete(clientName='pipelineClient')
         #     self.client = self.agave.clients.create(body={'clientName': self.clientName})
 
+        # TODO fix hardcoding for home_full, etc.
         # Grabbing token and links from the created Agave client
         self.agave_token = self.agave.token
         self.access_token = self.agave_token.token_info['access_token']
@@ -271,6 +272,7 @@ class Pipeline:
         # TODO add simulation option
         self.parse_inputs()
 
+        # TODO add with_refresh to all methods.
         if self.gwas:
             self.build_jsons()
 
