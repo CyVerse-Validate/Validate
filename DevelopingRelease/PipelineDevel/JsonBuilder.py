@@ -19,7 +19,12 @@ def fastlmm_json(data_name, input_dict):
 
     json_text = {
         "name": "FaST-LMM_{}".format(data_name),
-        "appId": "dooley-FaST-LMM-hpc-2.07",
+        "appId": "FaST-LMM-hpc-2.07",
+        "batchQueue": "normal",
+        "nodeCount": "1",
+        "processorsPerNode": "1",
+        "memoryPerNode": "4",
+        "maxRunTime": "01:00:00",
         "archive": True,
         "inputs": input_dict,
         "parameters": {
@@ -51,8 +56,12 @@ def ridge_json(data_name, input_dict):
 
     json_text = {
         "name": "RidgePredict_{}".format(data_name),
-        "appId": "dooley-RidgePredict-1.1",
-        "requestedTime": "00:30:00",
+        "appId": "RidgePredict-1.1",
+        "batchQueue": "normal",
+        "nodeCount": "1",
+        "processorsPerNode": "1",
+        "memoryPerNode": "4",
+        "maxRunTime": "01:00:00",
         "archive": True,
         "inputs": {
             "inputPed": "{}".format(input_dict["inputPED"])
@@ -83,7 +92,7 @@ def bayesr_json(data_name, input_dict):
 
     json_text = {
         "name": "BayesR_{}".format(data_name),
-        "appId": "dooley-bayesR-2.00",
+        "appId": "bayesR-2.02",
         "processorsPerNode": 16,
         "requestedTime": "48:00:00",
         "memoryPerNode": 32,
@@ -115,7 +124,7 @@ def plink_json(data_name):
 
     json_text = {
         "name": "Plink_{}".format(data_name),
-        "appId": "dooley-PLINK-hpc-1.07",
+        "appId": "PLINK-hpc-1.07",
         "processorsPerNode": 16,
         "requestedTime": "01:00:00",
         "memoryPerNode": 32,
@@ -145,7 +154,12 @@ def qxpak_json(data_name, input_dict):
 
     json_text = {
         "name": "QxPak_{}".format(data_name),
-        "appId": "dooley-qxpak-stampede-5.05",
+        "appId": "qxpak-stampede-5.05",
+        "batchQueue": "normal",
+        "nodeCount": "1",
+        "processorsPerNode": "1",
+        "memoryPerNode": "4",
+        "maxRunTime": "01:00:00",
         "archive": True,
         "inputs": input_dict,
         "parameter": {
@@ -157,22 +171,74 @@ def qxpak_json(data_name, input_dict):
 
 #TODO find Gemma JSON?
 def gemma_json(data_name, input_dict):
-    """"""
+    """Note, GEMMA is SERIAL.
+
+    Inputs:
+        inputBED
+        inputBIM
+        inputFAM
+        Phenotype
+        Annotation
+        MeanGenotype
+        RelatednessMatrix
+        RelatednessEigenvalue
+        RelatednessEigenvector
+        Covariate
+
+    Parameters:
+        PLINK:  True if PLINK format is being used.
+        BIMBAM: True if BIMBAM format is being used.
+        gk:     Type of relatedness matrix to calculate. 1 is centered,
+            2 is standaredized.
+        lmm:    Which frequentist test to use for univariate mixed model analysis.
+            1 preforms Wald Test, 2 preforms likelihood ratio test,
+            3 preforms score test, and 4 preforms all three tests.
+        PhenotypeNumbers:   Numbers indicating which phenotype GEMMA should look
+            at for association tests in the multivariate linear mixed model.
+        bslmm:  Which type of Bayesian sparse mixed model to fit. 1 runs a
+            standard BSLMM, 2 fits a ridge regression/GBLUP, and 3 fits a
+            probit BSLMM.
+        Type:   Type of anaysis desired. 1 computes relatedness matrix, 2
+            computes eigen decomposition of relatedness matrix, 3 computes a
+            [univariate/multivariate (?)] mixed model, and 4 is Bayesian spare
+            linear mixed model.
+        output: Name of the analysis output file.
+    """
+
     """Debug Statement"""
     print "Creating Gemma JSON."
 
     output = None
 
-    pass
+    json_text = {
+        "name": "GEMMA_{}".format(data_name),
+        "appId": "GEMMA-0.94.4",
+        "batchQueue": "normal",
+        "nodeCount": "1",
+        "processorsPerNode": "1",
+        "memoryPerNode": "4",
+        "maxRunTime": "01:00:00",
+        "archive": True,
+        "inputs": input_dict,
+        "parameters":{
+            "PLINK": "0",
+            "BIMBAM":"0"
+        }
+    }
+
+    return json_text, output
 
 def puma_json(data_name, input_dict):
     output = None
 
     json_text = {
         "name": "puma_{}".format(data_name),
-        "appId": "dooley-Puma-1.0",
-        "requestedTime": "00:05:00",
-        "batchQueue": "serial",
+        "appId": "Puma-1.0",
+        "batchQueue": "normal",
+        "nodeCount": "1",
+        "processorsPerNode": "1",
+        "memoryPerNode": "4",
+        "maxRunTime": "01:00:00",
         "archive": True,
         "inputs": input_dict,
         "parameters":{
@@ -183,6 +249,17 @@ def puma_json(data_name, input_dict):
     }
 
     return json_text, output
+
+
+def get_json_parameters():
+    """
+
+    Returns:
+
+
+    """
+    pass
+
 
 def make_gwas_json(selected_gwas, dataset_name, inputs):
     """Selected GWAS is a list of binary values with each element representing
@@ -233,8 +310,12 @@ def make_winnow_json(job_name, gwas_output_folder, ote_file):
 
     json_text = {
         "name" : 'Winnow_{}'.format(job_name),
-        "appId" : "dooley-Winnow-1.0.1",
-        "requestedTime" : "02:00:00",
+        "appId" : "Winnow-1.0.3",
+        "batchQueue": "normal",
+        "nodeCount": "1",
+        "processorsPerNode": "1",
+        "memoryPerNode": "4",
+        "maxRunTime": "01:00:00",
         "archive" : "true",
         "inputs" : {
             "Class" : ote_file,

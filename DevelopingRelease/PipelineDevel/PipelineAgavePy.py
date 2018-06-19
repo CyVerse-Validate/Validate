@@ -93,18 +93,19 @@ class Pipeline:
         if self.username is None:
             self.username = raw_input("Username:")
 
-        #TODO encapsulate
+        # If no password is passed via arguments, prompts the user to enter it
+        # in their terminal. This method securely handles the password.
         if self.password is None:
             self.password = getpass()
 
-        # generate a unique clientname based on agave username and host mac address
-        # could also add a uuid here...meah
+        # Unique client name is generated using the user's username and MAC
+        # address. This is done to allow for multiple pipeline clients on
+        # separate systems. Takes the format "<username>-pipelineClient-<mac>"
         self.clientName = "{}-pipelineClient-{}".format(self.username, get_mac()) \
             if (self.clientName == None) else self.clientName
 
+        # TODO delete debug statement.
         print "{a}:\t{b}".format(a="clientName", b=self.clientName)
-
-        # print "{} / {}".format(self.username,self.password)
 
         # # Establishing connection with Agave using the user's allocation username and password
         # self.agave = a.Agave(api_server='https://agave.iplantc.org',
@@ -177,7 +178,7 @@ class Pipeline:
 
     # TODO delete test method
     def cyverse_test(self):
-        """
+        """Test method for checking connection to CyVerse via AgavePy.
 
         :return:
         """
@@ -225,6 +226,7 @@ class Pipeline:
          u'endTime': None}
 
         print "Access Token:    {}".format(self.agave_token.token_info['access_token'])
+        print "Refresh Token:   {}".format(self.agave_token.token_info['refresh_token'])
         print "API Key:     {}".format(self.agave_token.api_key)
         print "API Secret:  {}\n".format(self.agave_token.api_secret)
         print "Home dir:    {}".format(self.home_dir)
@@ -264,9 +266,28 @@ class Pipeline:
         #     print f
 
     def validate(self):
-        """Main run method for the Validate Workflow.
+        """Main run method for the Validate Pipeline.
 
-        :return:
+        This method handles all stages of the Pipeline as defined below:
+            1. Parsing of inputs and retrieving file links from the desired
+                storage system.
+            2. Building GWAS JSON files for individual jobs in preparation to
+                submit to an execution system via Agave. Note, the execution
+                system for most apps is contained within the app definitions
+                stored on Agave.
+            3. Submits the previously generated GWAS JSON files and handles the
+                polling of submitted jobs via "poll_jobs".
+            4. When all jobs have finished, outputs are moved from the job
+                archive system into the Validate folder within the user's home
+                directory on their chosen storage system. Within this folder,
+                individual runs of Validate are encapsulated within their own
+                folders to allow for the storage/archive of multiple runs.
+            5. Winnow JSONs are created and submitted for each previously run
+                GWAS job, as long as known truth files exist for the given
+                dataset. Currently, Winnow only accepts OTE files.
+
+        Returns:
+
         """
         # TODO add option for the user to upload their own data from their local machines
         # TODO add simulation option
@@ -289,9 +310,63 @@ class Pipeline:
         # TODO Equalise outputs
 
     def checkArgs(self):
-        """Checks all command-line arguments provided in the command-line call.
+        """Method for parsing the provided command-line arguments.
 
-        :return:
+        Attributes:
+            -u, --username:
+                String. The user's username for their preferred login system.
+            --password:
+                String. The user's password for their preferred login system.
+            -i, --InFormat:
+                String. Format of the files the user is submitting for analysis.
+                Options are "p" for PED/MAP, "b" for BIM/BED/FAM, and "t" for
+                TPED/TFAM.
+            -f, --Folder:
+                String. Data folder for analysis. This should contain all input
+                data (of the format defined by -i, although others may exist
+                there as well but will not be analysed) as well as the
+                known-truth file.
+            -pno, --pheno:
+                String. Name (with extension) of the phenotype file. Requirement
+                of this argument/file is specific to different GWAS definitions.
+            -lmm, --fastlmm:
+                Binary value. If True, FaST-LMM will be run on the dataset.
+            -rdg, --ridge:
+                Binary value. If True, RidgePredict will be run on the dataset.
+            -bay, --bayes:
+                Binary value. If True, BayesR will be run on the dataset.
+            -plk, --plink:
+                Binary value. If True, PLINK will be run on the dataset.
+            -qxp, --qxpak:
+                Binary value. If True, QxPak will be run on the dataset.
+            -gma, --gemma:
+                Binary value. If True, Gemma will be run on the dataset.
+            -pma, --puma:
+                Binary value. If True, Puma will be run on the dataset.
+            --no_gwas:
+                Binary value. If True, no GWAS will be run. Instead, the
+                provided input folder will be interpreted as a folder for
+                Winnow and all GWAS stages will be omitted.
+            --no_winnow:
+                Binary value. If true, Winnow will not be run. GWAS analyses
+                will be submitted and handled as defined above, but no Winnow
+                jobs will be created or submitted after data is moved to the
+                Validate folder.
+            -sys, --system:
+                String. System ID for the user's preferred filesystem. This is
+                the system where all data will be retrieved from and stored to.
+            -ote, --truth:
+                String. Optional. Used to give an absolute path to the known
+                truth file for the given dataset if it does not reside in the
+                provided data folder (-f or --Folder).
+            -c, --client_name:
+                String. Allows the user to define an existing client for usage
+                with the Validate Pipeline. If this client is not found, this
+                string will instead be used to create a new client with the
+                provided name.
+
+        Returns:
+
         """
         # TODO add simulation || prediction || gwas
         # if simulation, make simulated data and folder for data before validating
@@ -368,14 +443,20 @@ class Pipeline:
                                    args.qxpak, args.gemma, args.puma])
         self.dataset_name = self.data_folder.split("/")[-1]
         self.systemid = args.system
-        self.known_truth = args.truth
+        self.known_truth = "agave://{}".format(os.path.join(self.systemid, args.truth))
         self.clientName = args.client_name
         # TODO Add option for expandable apps?
 
     def parse_inputs(self):
-        """Grabs the known-truth and all input files from the given directory.
+        """Grabs individual links to all input/OTE files defined by the user.
 
-        :return:
+        Begins by listing all files within the provided data folder (-f or
+        --Folder) and, depending on the provided input format (-i, --InFormat),
+        creates Agave-suitable links to all files matching this input format. If
+        any ".ote" files are found, these links are also generated.
+
+        Returns:
+
         """
         # TODO pull phenotype file too
         file_list = [f for f in self.agave.files.list(
@@ -383,6 +464,8 @@ class Pipeline:
 
         # TODO error check if no input file is found
         # If the input data was declared as PED/MAP
+        # TODO Restrict to ONE set ONLY.
+        # TODO Allow for explicit filename passing.
         if self.input_format == 'p':
             for file in file_list:
                 if ".ote" in file.name:
@@ -415,6 +498,7 @@ class Pipeline:
                 elif ".tfam" in file.name:
                     self.inputs['tfam'] = "agave://{}{}".format(file['system'], file['path'])
 
+        # TODO catch this earlier (within arg checking)
         else:
             raise ValueError("Incorrect input format declared.")
 
@@ -432,8 +516,9 @@ class Pipeline:
         for gwas in self.desired_gwas:
             if gwas:
                 print("desired_gwas:\t{}\ngwas index:\t{}".format(self.desired_gwas, self.desired_gwas.index(gwas)))
-                self.gwas_jsons.append(JsonBuilder.make_gwas_json(
-                    self.desired_gwas.index(gwas), self.dataset_name, self.inputs))
+                json, _ = JsonBuilder.make_gwas_json(
+                    self.desired_gwas.index(gwas), self.dataset_name, self.inputs)
+                self.gwas_jsons.append(json)
                 # else:
                 #     Make Winnow JSONs here.
                 # self.winnow_jsons = []
@@ -517,11 +602,11 @@ class Pipeline:
         :param jobid_dict: Dictionary with the Agave job-id as keys.
         :return:
         """
-        if not winnow:
-            out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.model',
-                              '.param', '.R']
-        else:
-            out_extensions = ['.txt']
+        # if not winnow:
+        #     out_extensions = ['.out.txt', '.freq', '.gv', '.hyp', '.model',
+        #                       '.param', '.R']
+        # else:
+        #     out_extensions = ['.txt']
         job_output_dict = {}
 
         # Iterates thorugh all Job-IDs and collects the output files for each
@@ -532,13 +617,32 @@ class Pipeline:
                 filePath=jobid_dict[jobid]['archivePath'])
 
             for file in remote_file_list:
-                if any(ext in file['name'] for ext in out_extensions):
-                    job_outputs.append(file['path'])
-                    print("\tAppending output file {}".format(file['name']))
+                # if any(ext in file['name'] for ext in out_extensions):
+                job_outputs.append(file['path'])
+                print("\tAppending output file {}".format(file['name']))
 
             job_output_dict[jobid] = job_outputs
 
         return job_output_dict
+
+    # def parse_archives(self, jobid_dict, winnow=False):
+    #     # excluded_ext = [".log", ".err", ".out"]
+    #     job_output_dict = {}
+    #
+    #     for jobid in jobid_dict.keys():
+    #         job_outputs = []
+    #         remote_file_list = self.agave.files.list(
+    #             systemId=self.systemid,
+    #             filePath=jobid_dict[jobid]['archivePath'])
+    #
+    #         for file in remote_file_list:
+    #             job_outputs.append(file['path'])
+    #             print("\tAppending output file {}".format(file['name']))
+    #
+    #         job_output_dict[jobid] = job_outputs
+    #
+    #     return job_output_dict
+
 
     # TODO Translate
     def make_output_folders(self, job_outputs):
