@@ -1,0 +1,249 @@
+{
+  "helpURI": "http://validate-10.readthedocs.io/en/latest/",
+  "label": "Runs a provided input folder through the Validate Pipeline.",
+  "defaultNodeCount": 1,
+  "defaultMaxRunTime": "02:00:00",
+  "shortDescription": "Takes data files in an input folder, preforms GWAS analyses on said data, and follows with known-truth testing.",
+  "longDescription": "Provided a folder holding inputs in a PED/MAP, BIM/BED/FAM, or TPED/TMAP format, this will preform a set of user-selected GWAS analyses and automatically pipe the outputs from these analyses through to be tested against a known-truth file for the dataset, which should also be held within the provided input directory.",
+  "executionSystem": "stampede.tacc.utexas.edu",
+  "executionType": "CLI",
+  "parallelism": "SERIAL",
+  "deploymentPath": "mjs3607/apps/validate-0.0.1",
+  "deploymentSystem": "data.iplantcollaborative.org",
+  "templatePath": "validate_wrapper.sh",
+  "testPath": "test/validate_test.sh",
+  "tags": [
+    "validate",
+    "gwas",
+    "known-truth",
+    "association"
+  ],
+  "ontology": [
+    "validate",
+    "gwas",
+    "known-truth",
+    "association"
+  ],
+  "modules": [],
+  "inputs": [
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "The input folder for the Validate pipeline.",
+        "argument": "-f"
+      },
+      "semantics": {
+        "maxCardinality": 1,
+        "ontology": [],
+        "minCardinality": 1
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "validator": "agave:\\/\\/http:\\/\\/.*",
+        "order": 3,
+        "default": "agave://http://datacommons.cyverse.org/browse/iplant/home/shared/syngenta_sim/Dong_Wang_sim/Analysis_Files/"
+      },
+      "id": "InputFolder"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "username",
+      "details": {
+        "label": "Username for the user on their default platform.",
+        "description": "This is the actual shell command you want to run",
+        "argument": "-u",
+        "showArgument": true,
+        "repeatArgument": false
+      },
+      "value": {
+        "default": "",
+        "type": "string",
+        "required": true,
+        "visible": true,
+        "order": 1
+      },
+      "semantics": {
+        "ontology": [],
+        "minCardinality": 1,
+        "maxCardinality": 1
+      }
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Format of the input files - p for PED/MAP, b for BIM/BED/FAM, t for TPED/TFAM.",
+        "argument": "-i"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+        "default": "p",
+        "order": 2
+      },
+      "id": "InputFormat"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "The folder to be piped through Validate - this should contain data files as well as the known-truth file for the dataset.",
+        "argument": "-f"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "string",
+        "order": 3
+      },
+      "id": "Folder"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Whether FaST-LMM should be run on the provided dataset.",
+        "argument": "-l"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "bool",
+        "default": "false",
+        "order": 4
+      },
+      "id": "FaST-LMM"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Whether Ridge Predict should be run on the provided dataset.",
+        "argument": "-r"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "bool",
+        "default": "false",
+        "order": 5
+      },
+      "id": "RidgePredict"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Whether BayesR should be run on the provided dataset.",
+        "argument": "-b"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "bool",
+        "default": "false",
+        "order": 6
+      },
+      "id": "BayesR"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Whether Plink should be run on the provided dataset.",
+        "argument": "-p"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "bool",
+        "default": "false",
+        "order": 7
+      },
+      "id": "Plink"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Whether QxPak should be run on the provided dataset.",
+        "argument": "-q"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "bool",
+        "default": "false",
+        "order": 8
+      },
+      "id": "QxPak"
+    },
+    {
+      "details": {
+        "showArgument": true,
+        "repeatArgument": false,
+        "label": "Whether Gemma should be run on the provided dataset.",
+        "argument": "-g"
+      },
+      "semantics": {
+        "minCardinality": 1,
+        "maxCardinality": 1,
+        "ontology": []
+      },
+      "value": {
+        "visible": true,
+        "required": true,
+        "type": "bool",
+        "default": "false",
+        "order": 9
+      },
+      "id": "Gemma"
+    }
+  ],
+  "checkpointable": false,
+  "outputs": [],
+  "name": "Validate",
+  "version": "0.0.1",
+  "defaultQueue": "normal",
+  "defaultMemoryPerNode": 1,
+  "defaultProcessorsPerNode": 1
+}

@@ -1,0 +1,16 @@
+{
+  "name": "ValidatePipeline",
+  "simulateNewData": false,
+  "inputs":{
+    "inputBED": "",
+    "inputBIM": "",
+    "inputFAM": "",
+    "covar": ""
+  },
+  "parameter": {
+    "verbose": true,
+    "fastlmm": false,
+    "bayesR": false,
+    "plink": false
+  }
+}
